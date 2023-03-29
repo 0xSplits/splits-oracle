@@ -34,7 +34,7 @@ contract ChainlinkOracleImpl is Owned, IOracle {
     /// structs
     /// -----------------------------------------------------------------------
 
-    struct InitChainlinkOracleImpl {
+    struct InitParams {
         address owner;
         uint32 defaultStaleAfter;
         uint32 defaultScaledOfferFactor;
@@ -126,7 +126,7 @@ contract ChainlinkOracleImpl is Owned, IOracle {
         chainlinkOracleFactory = msg.sender;
     }
 
-    function initializer(InitChainlinkOracleImpl calldata params_) external {
+    function initializer(InitParams calldata params_) external {
         // only chainlinkOracleFactory may call `initializer`
         if (msg.sender != chainlinkOracleFactory) revert Unauthorized();
 

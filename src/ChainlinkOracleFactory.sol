@@ -22,7 +22,7 @@ contract ChainlinkOracleFactory is IOracleFactory {
     /// events
     /// -----------------------------------------------------------------------
 
-    event CreateOracle(ChainlinkOracleImpl indexed oracle, ChainlinkOracleImpl.InitChainlinkOracleImpl params);
+    event CreateOracle(ChainlinkOracleImpl indexed oracle, ChainlinkOracleImpl.InitParams params);
 
     /// -----------------------------------------------------------------------
     /// storage
@@ -54,16 +54,12 @@ contract ChainlinkOracleFactory is IOracleFactory {
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    function createOracle(ChainlinkOracleImpl.InitChainlinkOracleImpl calldata params_)
-        external
-        returns (ChainlinkOracleImpl)
-    {
+    function createOracle(ChainlinkOracleImpl.InitParams calldata params_) external returns (ChainlinkOracleImpl) {
         return _createOracle(params_);
     }
 
     function createOracle(bytes calldata init_) external returns (IOracle) {
-        ChainlinkOracleImpl.InitChainlinkOracleImpl memory params =
-            abi.decode(init_, (ChainlinkOracleImpl.InitChainlinkOracleImpl));
+        ChainlinkOracleImpl.InitParams memory params = abi.decode(init_, (ChainlinkOracleImpl.InitParams));
         return _createOracle(params);
     }
 
@@ -71,7 +67,7 @@ contract ChainlinkOracleFactory is IOracleFactory {
     /// functions - private & internal
     /// -----------------------------------------------------------------------
 
-    function _createOracle(ChainlinkOracleImpl.InitChainlinkOracleImpl memory params_)
+    function _createOracle(ChainlinkOracleImpl.InitParams memory params_)
         internal
         returns (ChainlinkOracleImpl oracle)
     {

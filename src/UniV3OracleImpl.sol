@@ -30,7 +30,7 @@ contract UniV3OracleImpl is Owned, IOracle {
     /// structs
     /// -----------------------------------------------------------------------
 
-    struct InitUniV3OracleImpl {
+    struct InitParams {
         address owner;
         uint24 defaultFee;
         uint32 defaultPeriod;
@@ -116,7 +116,7 @@ contract UniV3OracleImpl is Owned, IOracle {
         uniV3OracleFactory = msg.sender;
     }
 
-    function initializer(InitUniV3OracleImpl calldata params_) external {
+    function initializer(InitParams calldata params_) external {
         // only uniV3OracleFactory may call `initializer`
         if (msg.sender != uniV3OracleFactory) revert Unauthorized();
 

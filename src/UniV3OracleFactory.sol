@@ -22,7 +22,7 @@ contract UniV3OracleFactory is IOracleFactory {
     /// events
     /// -----------------------------------------------------------------------
 
-    event CreateOracle(UniV3OracleImpl indexed oracle, UniV3OracleImpl.InitUniV3OracleImpl params);
+    event CreateOracle(UniV3OracleImpl indexed oracle, UniV3OracleImpl.InitParams params);
 
     /// -----------------------------------------------------------------------
     /// storage
@@ -53,12 +53,12 @@ contract UniV3OracleFactory is IOracleFactory {
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    function createOracle(UniV3OracleImpl.InitUniV3OracleImpl calldata params_) external returns (UniV3OracleImpl) {
+    function createOracle(UniV3OracleImpl.InitParams calldata params_) external returns (UniV3OracleImpl) {
         return _createOracle(params_);
     }
 
     function createOracle(bytes calldata init_) external returns (IOracle) {
-        UniV3OracleImpl.InitUniV3OracleImpl memory params = abi.decode(init_, (UniV3OracleImpl.InitUniV3OracleImpl));
+        UniV3OracleImpl.InitParams memory params = abi.decode(init_, (UniV3OracleImpl.InitParams));
         return _createOracle(params);
     }
 
@@ -66,10 +66,7 @@ contract UniV3OracleFactory is IOracleFactory {
     /// functions - private & internal
     /// -----------------------------------------------------------------------
 
-    function _createOracle(UniV3OracleImpl.InitUniV3OracleImpl memory params_)
-        internal
-        returns (UniV3OracleImpl oracle)
-    {
+    function _createOracle(UniV3OracleImpl.InitParams memory params_) internal returns (UniV3OracleImpl oracle) {
         oracle = UniV3OracleImpl(address(uniV3OracleImpl).clone());
         oracle.initializer(params_);
         emit CreateOracle({oracle: oracle, params: params_});
