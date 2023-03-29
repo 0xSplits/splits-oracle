@@ -34,6 +34,14 @@ contract ChainlinkOracleImpl is Owned, IOracle {
     /// structs
     /// -----------------------------------------------------------------------
 
+    struct InitChainlinkOracleImpl {
+        address owner;
+        uint32 defaultStaleAfter;
+        uint32 defaultScaledOfferFactor;
+        SetTokenOverrideParams[] tokenOverrides;
+        SetPairOverrideParams[] pairOverrides;
+    }
+
     struct SetTokenOverrideParams {
         address token;
         address tokenOverride;
@@ -118,23 +126,17 @@ contract ChainlinkOracleImpl is Owned, IOracle {
         chainlinkOracleFactory = msg.sender;
     }
 
-    function initializer(
-        address owner_,
-        uint32 defaultStaleAfter_,
-        uint32 defaultScaledOfferFactor_,
-        SetTokenOverrideParams[] calldata toParams_,
-        SetPairOverrideParams[] calldata poParams_
-    ) external {
+    function initializer(InitChainlinkOracleImpl calldata params_) external {
         // only chainlinkOracleFactory may call `initializer`
         if (msg.sender != chainlinkOracleFactory) revert Unauthorized();
 
-        owner = owner_;
-        $defaultStaleAfter = defaultStaleAfter_;
-        $defaultScaledOfferFactor = defaultScaledOfferFactor_;
-        emit OwnershipTransferred(address(0), owner_);
+        owner = params_.owner;
+        $defaultStaleAfter = params_.defaultStaleAfter;
+        $defaultScaledOfferFactor = params_.defaultScaledOfferFactor;
+        emit OwnershipTransferred(address(0), params_.owner);
 
-        _setTokenOverrides(toParams_);
-        _setPairOverrides(poParams_);
+        _setTokenOverrides(params_.tokenOverrides);
+        _setPairOverrides(params_.pairOverrides);
     }
 
     /// -----------------------------------------------------------------------

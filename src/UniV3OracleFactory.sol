@@ -22,14 +22,7 @@ contract UniV3OracleFactory is IOracleFactory {
     /// events
     /// -----------------------------------------------------------------------
 
-    event CreateOracle(
-        UniV3OracleImpl indexed oracle,
-        address owner,
-        uint24 defaultFee,
-        uint32 defaultPeriod,
-        uint32 defaultScaledOfferFactor,
-        UniV3OracleImpl.SetPairOverrideParams[] poParams
-    );
+    event CreateOracle(UniV3OracleImpl indexed oracle, UniV3OracleImpl.InitUniV3OracleImpl params);
 
     /// -----------------------------------------------------------------------
     /// storage
@@ -49,7 +42,7 @@ contract UniV3OracleFactory is IOracleFactory {
         uniV3OracleImpl = new UniV3OracleImpl({
             uniswapV3Factory_: uniswapV3Factory_,
             weth9_: weth9_
-            });
+        });
     }
 
     /// -----------------------------------------------------------------------
@@ -60,59 +53,25 @@ contract UniV3OracleFactory is IOracleFactory {
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    function createOracle(
-        address owner_,
-        uint24 defaultFee_,
-        uint32 defaultPeriod_,
-        uint32 defaultScaledOfferFactor_,
-        UniV3OracleImpl.SetPairOverrideParams[] memory poParams_
-    ) external returns (UniV3OracleImpl oracle) {
-        oracle = UniV3OracleImpl(address(uniV3OracleImpl).clone());
-        oracle.initializer({
-            owner_: owner_,
-            defaultFee_: defaultFee_,
-            defaultPeriod_: defaultPeriod_,
-            defaultScaledOfferFactor_: defaultScaledOfferFactor_,
-            poParams_: poParams_
-        });
-
-        emit CreateOracle({
-            oracle: oracle,
-            owner: owner_,
-            defaultFee: defaultFee_,
-            defaultPeriod: defaultPeriod_,
-            defaultScaledOfferFactor: defaultScaledOfferFactor_,
-            poParams: poParams_
-        });
+    function createOracle(UniV3OracleImpl.InitUniV3OracleImpl calldata params_) external returns (UniV3OracleImpl) {
+        return _createOracle(params_);
     }
 
     function createOracle(bytes calldata init_) external returns (IOracle) {
-        (
-            address owner,
-            uint24 defaultFee,
-            uint32 defaultPeriod,
-            uint32 defaultScaledOfferFactor,
-            UniV3OracleImpl.SetPairOverrideParams[] memory poParams
-        ) = abi.decode(init_, (address, uint24, uint32, uint32, UniV3OracleImpl.SetPairOverrideParams[]));
+        UniV3OracleImpl.InitUniV3OracleImpl memory params = abi.decode(init_, (UniV3OracleImpl.InitUniV3OracleImpl));
+        return _createOracle(params);
+    }
 
-        UniV3OracleImpl oracle = UniV3OracleImpl(address(uniV3OracleImpl).clone());
-        oracle.initializer({
-            owner_: owner,
-            defaultFee_: defaultFee,
-            defaultPeriod_: defaultPeriod,
-            defaultScaledOfferFactor_: defaultScaledOfferFactor,
-            poParams_: poParams
-        });
+    /// -----------------------------------------------------------------------
+    /// functions - private & internal
+    /// -----------------------------------------------------------------------
 
-        emit CreateOracle({
-            oracle: oracle,
-            owner: owner,
-            defaultFee: defaultFee,
-            defaultPeriod: defaultPeriod,
-            defaultScaledOfferFactor: defaultScaledOfferFactor,
-            poParams: poParams
-        });
-
-        return IOracle(oracle);
+    function _createOracle(UniV3OracleImpl.InitUniV3OracleImpl memory params_)
+        internal
+        returns (UniV3OracleImpl oracle)
+    {
+        oracle = UniV3OracleImpl(address(uniV3OracleImpl).clone());
+        oracle.initializer(params_);
+        emit CreateOracle({oracle: oracle, params: params_});
     }
 }

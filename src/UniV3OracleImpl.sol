@@ -30,6 +30,14 @@ contract UniV3OracleImpl is Owned, IOracle {
     /// structs
     /// -----------------------------------------------------------------------
 
+    struct InitUniV3OracleImpl {
+        address owner;
+        uint24 defaultFee;
+        uint32 defaultPeriod;
+        uint32 defaultScaledOfferFactor;
+        SetPairOverrideParams[] pairOverrides;
+    }
+
     struct SetPairOverrideParams {
         QuotePair quotePair;
         PairOverride pairOverride;
@@ -108,23 +116,17 @@ contract UniV3OracleImpl is Owned, IOracle {
         uniV3OracleFactory = msg.sender;
     }
 
-    function initializer(
-        address owner_,
-        uint24 defaultFee_,
-        uint32 defaultPeriod_,
-        uint32 defaultScaledOfferFactor_,
-        SetPairOverrideParams[] calldata poParams_
-    ) external {
+    function initializer(InitUniV3OracleImpl calldata params_) external {
         // only uniV3OracleFactory may call `initializer`
         if (msg.sender != uniV3OracleFactory) revert Unauthorized();
 
-        owner = owner_;
-        $defaultFee = defaultFee_;
-        $defaultPeriod = defaultPeriod_;
-        $defaultScaledOfferFactor = defaultScaledOfferFactor_;
-        emit OwnershipTransferred(address(0), owner_);
+        owner = params_.owner;
+        $defaultFee = params_.defaultFee;
+        $defaultPeriod = params_.defaultPeriod;
+        $defaultScaledOfferFactor = params_.defaultScaledOfferFactor;
+        emit OwnershipTransferred(address(0), params_.owner);
 
-        _setPairOverrides(poParams_);
+        _setPairOverrides(params_.pairOverrides);
     }
 
     /// -----------------------------------------------------------------------

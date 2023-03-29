@@ -22,14 +22,7 @@ contract ChainlinkOracleFactory is IOracleFactory {
     /// events
     /// -----------------------------------------------------------------------
 
-    event CreateOracle(
-        ChainlinkOracleImpl indexed oracle,
-        address owner,
-        uint32 defaultStaleAfter,
-        uint32 defaultScaledOfferFactor,
-        ChainlinkOracleImpl.SetTokenOverrideParams[] toParams,
-        ChainlinkOracleImpl.SetPairOverrideParams[] poParams
-    );
+    event CreateOracle(ChainlinkOracleImpl indexed oracle, ChainlinkOracleImpl.InitChainlinkOracleImpl params);
 
     /// -----------------------------------------------------------------------
     /// storage
@@ -61,68 +54,29 @@ contract ChainlinkOracleFactory is IOracleFactory {
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    function createOracle(
-        address owner_,
-        uint32 defaultStaleAfter_,
-        uint32 defaultScaledOfferFactor_,
-        ChainlinkOracleImpl.SetTokenOverrideParams[] memory toParams_,
-        ChainlinkOracleImpl.SetPairOverrideParams[] memory poParams_
-    ) external returns (ChainlinkOracleImpl oracle) {
-        oracle = ChainlinkOracleImpl(address(chainlinkOracleImpl).clone());
-        oracle.initializer({
-            owner_: owner_,
-            defaultStaleAfter_: defaultStaleAfter_,
-            defaultScaledOfferFactor_: defaultScaledOfferFactor_,
-            toParams_: toParams_,
-            poParams_: poParams_
-        });
-
-        emit CreateOracle({
-            oracle: oracle,
-            owner: owner_,
-            defaultStaleAfter: defaultStaleAfter_,
-            defaultScaledOfferFactor: defaultScaledOfferFactor_,
-            toParams: toParams_,
-            poParams: poParams_
-        });
+    function createOracle(ChainlinkOracleImpl.InitChainlinkOracleImpl calldata params_)
+        external
+        returns (ChainlinkOracleImpl)
+    {
+        return _createOracle(params_);
     }
 
     function createOracle(bytes calldata init_) external returns (IOracle) {
-        (
-            address owner,
-            uint32 defaultStaleAfter,
-            uint32 defaultScaledOfferFactor,
-            ChainlinkOracleImpl.SetTokenOverrideParams[] memory toParams,
-            ChainlinkOracleImpl.SetPairOverrideParams[] memory poParams
-        ) = abi.decode(
-            init_,
-            (
-                address,
-                uint32,
-                uint32,
-                ChainlinkOracleImpl.SetTokenOverrideParams[],
-                ChainlinkOracleImpl.SetPairOverrideParams[]
-            )
-        );
+        ChainlinkOracleImpl.InitChainlinkOracleImpl memory params =
+            abi.decode(init_, (ChainlinkOracleImpl.InitChainlinkOracleImpl));
+        return _createOracle(params);
+    }
 
-        ChainlinkOracleImpl oracle = ChainlinkOracleImpl(address(chainlinkOracleImpl).clone());
-        oracle.initializer({
-            owner_: owner,
-            defaultStaleAfter_: defaultStaleAfter,
-            defaultScaledOfferFactor_: defaultScaledOfferFactor,
-            toParams_: toParams,
-            poParams_: poParams
-        });
+    /// -----------------------------------------------------------------------
+    /// functions - private & internal
+    /// -----------------------------------------------------------------------
 
-        emit CreateOracle({
-            oracle: oracle,
-            owner: owner,
-            defaultStaleAfter: defaultStaleAfter,
-            defaultScaledOfferFactor: defaultScaledOfferFactor,
-            toParams: toParams,
-            poParams: poParams
-        });
-
-        return IOracle(oracle);
+    function _createOracle(ChainlinkOracleImpl.InitChainlinkOracleImpl memory params_)
+        internal
+        returns (ChainlinkOracleImpl oracle)
+    {
+        oracle = ChainlinkOracleImpl(address(chainlinkOracleImpl).clone());
+        oracle.initializer(params_);
+        emit CreateOracle({oracle: oracle, params: params_});
     }
 }
