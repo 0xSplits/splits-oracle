@@ -376,8 +376,8 @@ contract ChainlinkOracleImpl is Owned, IOracle {
         view
         returns (uint256)
     {
-        uint8 baseDecimals = quoteParams_.quotePair.base._getDecimals();
-        uint8 quoteDecimals = quoteParams_.quotePair.quote._getDecimals();
+        uint8 baseDecimals = quoteParams_.quotePair.base._decimals();
+        uint8 quoteDecimals = quoteParams_.quotePair.quote._decimals();
 
         int256 decimalAdjustment = int256(uint256(quoteDecimals)) - int256(uint256(baseDecimals));
         if (decimalAdjustment > 0) {
