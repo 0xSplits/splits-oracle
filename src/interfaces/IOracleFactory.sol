@@ -5,5 +5,5 @@ import {IOracle} from "src/interfaces/IOracle.sol";
 
 /// @title Oracle factory interface
 interface IOracleFactory {
-    function createOracle(bytes calldata init) external returns (IOracle oracle);
+    function createOracle(bytes calldata init_) external returns (IOracle oracle);
 }

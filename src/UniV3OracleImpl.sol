@@ -11,7 +11,7 @@ import {QuotePair, ConvertedQuotePair, SortedConvertedQuotePair} from "src/utils
 
 /// @title UniV3 Oracle Implementation
 /// @author 0xSplits
-/// @notice An oracle clone-implementation using UniswapV3 TWAP
+/// @notice A clone-implementation of an oracle using UniswapV3 TWAP
 contract UniV3OracleImpl is Owned, IOracle {
     /// -----------------------------------------------------------------------
     /// libraries
@@ -66,6 +66,7 @@ contract UniV3OracleImpl is Owned, IOracle {
     /// storage - constants & immutables
     /// -----------------------------------------------------------------------
 
+    /// @dev percentages measured in hundredths of basis points
     uint32 internal constant PERCENTAGE_SCALE = 100_00_00; // = 100%
 
     address public immutable uniV3OracleFactory;
@@ -102,7 +103,7 @@ contract UniV3OracleImpl is Owned, IOracle {
 
     /// slot 1 - 0 bytes free
 
-    /// overrides for specific token pairs
+    /// overrides for specific quote pairs
     /// 32 bytes
     mapping(address => mapping(address => PairOverride)) internal $_pairOverrides;
 
@@ -111,9 +112,9 @@ contract UniV3OracleImpl is Owned, IOracle {
     /// -----------------------------------------------------------------------
 
     constructor(IUniswapV3Factory uniswapV3Factory_, address weth9_) Owned(address(0)) {
+        uniV3OracleFactory = msg.sender;
         uniswapV3Factory = uniswapV3Factory_;
         weth9 = weth9_;
-        uniV3OracleFactory = msg.sender;
     }
 
     function initializer(InitParams calldata params_) external {
@@ -169,13 +170,23 @@ contract UniV3OracleImpl is Owned, IOracle {
     /// functions - public & external - views
     /// -----------------------------------------------------------------------
 
-    // TODO: array?
-    /// get pair override for a token pair
-    function getPairOverride(QuotePair calldata quotePair_) external view returns (PairOverride memory) {
-        return _getPairOverride(_convertAndSortQuotePair(quotePair_));
+    /// get pair override for an array of quote pairs
+    function getPairOverrides(QuotePair[] calldata quotePairs_)
+        external
+        view
+        returns (PairOverride[] memory pairOverrides)
+    {
+        uint256 length = quotePairs_.length;
+        pairOverrides = new PairOverride[](length);
+        for (uint256 i; i < length;) {
+            pairOverrides[i] = _getPairOverride(quotePairs_[i]);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
-    /// get quote amounts for a set of trades
+    /// get amounts for an array of quotes
     function getQuoteAmounts(QuoteParams[] calldata quoteParams_)
         external
         view
@@ -220,14 +231,14 @@ contract UniV3OracleImpl is Owned, IOracle {
     function _getQuoteAmount(QuoteParams calldata quoteParams_) internal view returns (uint256) {
         ConvertedQuotePair memory cqp = quoteParams_.quotePair._convert(_convertToken);
         SortedConvertedQuotePair memory scqp = cqp._sort();
-        PairOverride memory po = _getPairOverride(scqp);
 
+        PairOverride memory po = _getPairOverride(scqp);
         if (po.scaledOfferFactor == 0) {
             po.scaledOfferFactor = $defaultScaledOfferFactor;
         }
 
         // skip oracle if converted tokens are equal
-        if (scqp.cToken0 == scqp.cToken1) {
+        if (cqp.cBase == cqp.cQuote) {
             return quoteParams_.baseAmount * po.scaledOfferFactor / PERCENTAGE_SCALE;
         }
 
@@ -254,6 +265,11 @@ contract UniV3OracleImpl is Owned, IOracle {
         });
 
         return unscaledAmountToBeneficiary * po.scaledOfferFactor / PERCENTAGE_SCALE;
+    }
+
+    /// get pair override
+    function _getPairOverride(QuotePair calldata quotePair_) internal view returns (PairOverride memory) {
+        return _getPairOverride(_convertAndSortQuotePair(quotePair_));
     }
 
     /// get pair overrides

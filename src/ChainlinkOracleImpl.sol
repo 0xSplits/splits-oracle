@@ -13,7 +13,7 @@ import {QuotePair, ConvertedQuotePair, SortedConvertedQuotePair} from "src/utils
 
 /// @title Chainlink Oracle Implementation
 /// @author 0xSplits
-/// @notice An oracle clone-implementation using chainlink
+/// @notice A clone-implementation of an oracle using chainlink
 contract ChainlinkOracleImpl is Owned, IOracle {
     /// -----------------------------------------------------------------------
     /// libraries
@@ -48,7 +48,7 @@ contract ChainlinkOracleImpl is Owned, IOracle {
     }
 
     struct SetPairOverrideParams {
-        QuotePair qp;
+        QuotePair quotePair;
         PairOverride pairOverride;
     }
 
@@ -111,7 +111,7 @@ contract ChainlinkOracleImpl is Owned, IOracle {
 
     /// slot 2 - 0 bytes free
 
-    /// overrides for specific token pairs
+    /// overrides for specific quote pairs
     /// 32 bytes
     mapping(address => mapping(address => PairOverride)) internal $_pairOverrides;
 
@@ -120,10 +120,10 @@ contract ChainlinkOracleImpl is Owned, IOracle {
     /// -----------------------------------------------------------------------
 
     constructor(FeedRegistryInterface clFeedRegistry_, address weth9_, address clETH_) Owned(address(0)) {
+        chainlinkOracleFactory = msg.sender;
         clFeedRegistry = clFeedRegistry_;
         weth9 = weth9_;
         clETH = clETH_;
-        chainlinkOracleFactory = msg.sender;
     }
 
     function initializer(InitParams calldata params_) external {
@@ -179,18 +179,32 @@ contract ChainlinkOracleImpl is Owned, IOracle {
     /// functions - public & external - views
     /// -----------------------------------------------------------------------
 
-    // TODO: array?
-    /// get pair override for a token pair
-    function getPairOverride(QuotePair calldata quotePair_) external view returns (PairOverride memory) {
-        return _getPairOverride(_convertAndSortQuotePair(quotePair_));
+    /// get pair overrides for an array of quote pairs
+    function getPairOverrides(QuotePair[] calldata quotePairs_)
+        external
+        view
+        returns (PairOverride[] memory pairOverrides)
+    {
+        uint256 length = quotePairs_.length;
+        pairOverrides = new PairOverride[](length);
+        for (uint256 i; i < length;) {
+            pairOverrides[i] = _getPairOverride(quotePairs_[i]);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
-    /// get quote amounts for a set of trades
-    function getQuoteAmounts(QuoteParams[] calldata qps_) external view returns (uint256[] memory quoteAmounts) {
-        uint256 length = qps_.length;
+    /// get amounts for an array of quotes
+    function getQuoteAmounts(QuoteParams[] calldata quoteParams_)
+        external
+        view
+        returns (uint256[] memory quoteAmounts)
+    {
+        uint256 length = quoteParams_.length;
         quoteAmounts = new uint256[](length);
         for (uint256 i; i < length;) {
-            quoteAmounts[i] = _getQuoteAmount(qps_[i]);
+            quoteAmounts[i] = _getQuoteAmount(quoteParams_[i]);
             unchecked {
                 ++i;
             }
@@ -234,7 +248,7 @@ contract ChainlinkOracleImpl is Owned, IOracle {
 
     /// set pair override
     function _setPairOverride(SetPairOverrideParams calldata params_) internal {
-        SortedConvertedQuotePair memory scqp = _convertAndSortQuotePair(params_.qp);
+        SortedConvertedQuotePair memory scqp = _convertAndSortQuotePair(params_.quotePair);
         $_pairOverrides[scqp.cToken0][scqp.cToken1] = params_.pairOverride;
     }
 
@@ -261,7 +275,7 @@ contract ChainlinkOracleImpl is Owned, IOracle {
         uint256 unscaledAmountToBeneficiary = uint256(quoteParams_.baseAmount);
         // skip oracle if converted tokens are equal
         // (can't return early, still need to adjust decimals)
-        if (scqp.cToken0 != scqp.cToken1) {
+        if (cqp.cBase != cqp.cQuote) {
             if (path.length == 0) {
                 path = _getPathFromQuoteParams(quoteParams_, cqp);
             } else if (cqp.cBase != scqp.cToken0) {
@@ -274,25 +288,6 @@ contract ChainlinkOracleImpl is Owned, IOracle {
 
         unscaledAmountToBeneficiary = _adjustDecimals(unscaledAmountToBeneficiary, quoteParams_);
         return unscaledAmountToBeneficiary * po.scaledOfferFactor / PERCENTAGE_SCALE;
-    }
-
-    /// get pair override
-    function _getPairOverride(SortedConvertedQuotePair memory scqp_) internal view returns (PairOverride memory) {
-        return $_pairOverrides[scqp_.cToken0][scqp_.cToken1];
-    }
-
-    /// convert & sort tokens into canonical order
-    function _convertAndSortQuotePair(QuotePair calldata quotePair_)
-        internal
-        view
-        returns (SortedConvertedQuotePair memory)
-    {
-        return quotePair_._convert(_convertToken)._sort();
-    }
-
-    /// convert eth (0x0) to weth
-    function _convertToken(address token_) internal view returns (address) {
-        return (token_._isETH() || token_ == weth9) ? clETH : $tokenOverrides[token_];
     }
 
     /// returns the AggregatorV3Interface[] path from quoteParams_
@@ -384,5 +379,36 @@ contract ChainlinkOracleImpl is Owned, IOracle {
             return unscaledAmountToBeneficiary_ * 10 ** uint256(decimalAdjustment);
         }
         return unscaledAmountToBeneficiary_ / 10 ** uint256(-decimalAdjustment);
+    }
+
+    /// get pair override
+    function _getPairOverride(QuotePair calldata quotePair_) internal view returns (PairOverride memory) {
+        return _getPairOverride(_convertAndSortQuotePair(quotePair_));
+    }
+
+    /// get pair override
+    function _getPairOverride(SortedConvertedQuotePair memory scqp_) internal view returns (PairOverride memory) {
+        return $_pairOverrides[scqp_.cToken0][scqp_.cToken1];
+    }
+
+    /// convert & sort tokens into canonical order
+    function _convertAndSortQuotePair(QuotePair calldata quotePair_)
+        internal
+        view
+        returns (SortedConvertedQuotePair memory)
+    {
+        return quotePair_._convert(_convertToken)._sort();
+    }
+
+    /// convert eth (0x0) & weth to clETH; use override for other tokens, if it exists
+    function _convertToken(address token_) internal view returns (address) {
+        if (token_._isETH() || token_ == weth9) {
+            return clETH;
+        }
+        address tokenOverride = $tokenOverrides[token_];
+        if (tokenOverride != address(0)) {
+            return tokenOverride;
+        }
+        return token_;
     }
 }
