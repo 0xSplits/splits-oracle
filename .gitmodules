@@ -15,6 +15,3 @@
 	path = lib/v3-core
 	url = https://github.com/Uniswap/v3-core
 	branch = 0.8
-[submodule "lib/chainlink"]
-	path = lib/chainlink
-	url = https://github.com/smartcontractkit/chainlink
