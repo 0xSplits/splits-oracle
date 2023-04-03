@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {Owned} from "solmate/auth/Owned.sol";
 import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {OracleLibrary} from "v3-periphery/libraries/OracleLibrary.sol";
+import {OwnableImpl} from "splits-utils/OwnableImpl.sol";
+import {TokenUtils} from "splits-utils/TokenUtils.sol";
 
 import {IOracle} from "src/interfaces/IOracle.sol";
-import {TokenUtils} from "src/utils/TokenUtils.sol";
 import {QuotePair, ConvertedQuotePair, SortedConvertedQuotePair} from "src/utils/QuotePair.sol";
 
 /// @title UniV3 Oracle Implementation
 /// @author 0xSplits
 /// @notice A clone-implementation of an oracle using UniswapV3 TWAP
-contract UniV3OracleImpl is Owned, IOracle {
+contract UniV3OracleImpl is OwnableImpl, IOracle {
     /// -----------------------------------------------------------------------
     /// libraries
     /// -----------------------------------------------------------------------
@@ -23,7 +23,6 @@ contract UniV3OracleImpl is Owned, IOracle {
     /// errors
     /// -----------------------------------------------------------------------
 
-    error Unauthorized();
     error Pool_DoesNotExist();
 
     /// -----------------------------------------------------------------------
@@ -79,8 +78,8 @@ contract UniV3OracleImpl is Owned, IOracle {
 
     /// slot 0 - 1 byte free
 
-    /// Owned storage
-    /// address public owner;
+    /// OwnableImpl storage
+    /// address public $owner;
     /// 20 bytes
 
     /// default uniswap pool fee
@@ -111,7 +110,7 @@ contract UniV3OracleImpl is Owned, IOracle {
     /// constructor & initializer
     /// -----------------------------------------------------------------------
 
-    constructor(IUniswapV3Factory uniswapV3Factory_, address weth9_) Owned(address(0)) {
+    constructor(IUniswapV3Factory uniswapV3Factory_, address weth9_) {
         uniV3OracleFactory = msg.sender;
         uniswapV3Factory = uniswapV3Factory_;
         weth9 = weth9_;
@@ -121,11 +120,11 @@ contract UniV3OracleImpl is Owned, IOracle {
         // only uniV3OracleFactory may call `initializer`
         if (msg.sender != uniV3OracleFactory) revert Unauthorized();
 
-        owner = params_.owner;
+        // TODO: check if compiler handles packing properly
+        __initOwnable(params_.owner);
         $defaultFee = params_.defaultFee;
         $defaultPeriod = params_.defaultPeriod;
         $defaultScaledOfferFactor = params_.defaultScaledOfferFactor;
-        emit OwnershipTransferred(address(0), params_.owner);
 
         _setPairOverrides(params_.pairOverrides);
     }
