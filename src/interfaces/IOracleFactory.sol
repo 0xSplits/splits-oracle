@@ -7,3 +7,8 @@ import {IOracle} from "src/interfaces/IOracle.sol";
 interface IOracleFactory {
     function createOracle(bytes calldata init_) external returns (IOracle oracle);
 }
+
+struct CreateOracleParams {
+    IOracleFactory factory;
+    bytes data;
+}
