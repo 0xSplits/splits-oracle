@@ -9,7 +9,7 @@ import {TokenUtils} from "splits-utils/TokenUtils.sol";
 import {IOracle} from "./interfaces/IOracle.sol";
 import {QuotePair, ConvertedQuotePair, SortedConvertedQuotePair} from "./utils/QuotePair.sol";
 
-// TODO: open q: add pausable?
+// TODO: add pausable ?
 
 /// @title UniV3 Oracle Implementation
 /// @author 0xSplits
@@ -122,7 +122,6 @@ contract UniV3OracleImpl is OwnableImpl, IOracle {
         // only uniV3OracleFactory may call `initializer`
         if (msg.sender != uniV3OracleFactory) revert Unauthorized();
 
-        // TODO: check if compiler handles packing properly
         __initOwnable(params_.owner);
         $defaultFee = params_.defaultFee;
         $defaultPeriod = params_.defaultPeriod;
