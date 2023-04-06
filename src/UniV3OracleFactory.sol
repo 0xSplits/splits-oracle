@@ -4,9 +4,9 @@ pragma solidity ^0.8.17;
 import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 
-import {IOracle} from "src/interfaces/IOracle.sol";
-import {IOracleFactory} from "src/interfaces/IOracleFactory.sol";
-import {UniV3OracleImpl} from "src/UniV3OracleImpl.sol";
+import {IOracle} from "./interfaces/IOracle.sol";
+import {IOracleFactory} from "./interfaces/IOracleFactory.sol";
+import {UniV3OracleImpl} from "./UniV3OracleImpl.sol";
 
 /// @title UniV3 Oracle Factory
 /// @author 0xSplits

@@ -6,8 +6,10 @@ import {OracleLibrary} from "v3-periphery/libraries/OracleLibrary.sol";
 import {OwnableImpl} from "splits-utils/OwnableImpl.sol";
 import {TokenUtils} from "splits-utils/TokenUtils.sol";
 
-import {IOracle} from "src/interfaces/IOracle.sol";
-import {QuotePair, ConvertedQuotePair, SortedConvertedQuotePair} from "src/utils/QuotePair.sol";
+import {IOracle} from "./interfaces/IOracle.sol";
+import {QuotePair, ConvertedQuotePair, SortedConvertedQuotePair} from "./utils/QuotePair.sol";
+
+// TODO: open q: add pausable?
 
 /// @title UniV3 Oracle Implementation
 /// @author 0xSplits
