@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 
-import {IOracle} from "./interfaces/IOracle.sol";
+import {OracleImpl} from "./OracleImpl.sol";
 import {IOracleFactory} from "./interfaces/IOracleFactory.sol";
 import {UniV3OracleImpl} from "./UniV3OracleImpl.sol";
 
@@ -12,31 +12,11 @@ import {UniV3OracleImpl} from "./UniV3OracleImpl.sol";
 /// @author 0xSplits
 /// @notice Factory for creating uniV3 oracles
 contract UniV3OracleFactory is IOracleFactory {
-    /// -----------------------------------------------------------------------
-    /// libraries
-    /// -----------------------------------------------------------------------
-
     using LibClone for address;
-
-    /// -----------------------------------------------------------------------
-    /// events
-    /// -----------------------------------------------------------------------
 
     event CreateOracle(UniV3OracleImpl indexed oracle, UniV3OracleImpl.InitParams params);
 
-    /// -----------------------------------------------------------------------
-    /// storage
-    /// -----------------------------------------------------------------------
-
-    /// -----------------------------------------------------------------------
-    /// storage - constants & immutables
-    /// -----------------------------------------------------------------------
-
     UniV3OracleImpl public immutable uniV3OracleImpl;
-
-    /// -----------------------------------------------------------------------
-    /// constructor
-    /// -----------------------------------------------------------------------
 
     constructor(IUniswapV3Factory uniswapV3Factory_, address weth9_) {
         uniV3OracleImpl = new UniV3OracleImpl({
@@ -46,10 +26,6 @@ contract UniV3OracleFactory is IOracleFactory {
     }
 
     /// -----------------------------------------------------------------------
-    /// functions
-    /// -----------------------------------------------------------------------
-
-    /// -----------------------------------------------------------------------
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
@@ -57,8 +33,8 @@ contract UniV3OracleFactory is IOracleFactory {
         return _createOracle(params_);
     }
 
-    function createOracle(bytes calldata init_) external returns (IOracle) {
-        UniV3OracleImpl.InitParams memory params = abi.decode(init_, (UniV3OracleImpl.InitParams));
+    function createOracle(bytes calldata data_) external returns (OracleImpl) {
+        UniV3OracleImpl.InitParams memory params = abi.decode(data_, (UniV3OracleImpl.InitParams));
         return _createOracle(params);
     }
 

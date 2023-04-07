@@ -3,18 +3,15 @@ pragma solidity ^0.8.17;
 
 import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {OracleLibrary} from "v3-periphery/libraries/OracleLibrary.sol";
-import {OwnableImpl} from "splits-utils/OwnableImpl.sol";
 import {TokenUtils} from "splits-utils/TokenUtils.sol";
 
-import {IOracle} from "./interfaces/IOracle.sol";
+import {OracleImpl} from "./OracleImpl.sol";
 import {QuotePair, ConvertedQuotePair, SortedConvertedQuotePair} from "./utils/QuotePair.sol";
-
-// TODO: add pausable ?
 
 /// @title UniV3 Oracle Implementation
 /// @author 0xSplits
 /// @notice A clone-implementation of an oracle using UniswapV3 TWAP
-contract UniV3OracleImpl is OwnableImpl, IOracle {
+contract UniV3OracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
     /// libraries
     /// -----------------------------------------------------------------------
@@ -78,11 +75,15 @@ contract UniV3OracleImpl is OwnableImpl, IOracle {
     /// storage - mutables
     /// -----------------------------------------------------------------------
 
-    /// slot 0 - 1 byte free
+    /// slot 0 - 0 byte free
 
     /// OwnableImpl storage
-    /// address public $owner;
+    /// address internal $owner;
     /// 20 bytes
+
+    /// PausableImpl storage
+    /// bool internal $paused;
+    /// 1 byte
 
     /// default uniswap pool fee
     /// @dev PERCENTAGE_SCALE = 1e6 = 100_00_00 = 100%;
@@ -190,6 +191,8 @@ contract UniV3OracleImpl is OwnableImpl, IOracle {
     function getQuoteAmounts(QuoteParams[] calldata quoteParams_)
         external
         view
+        override
+        pausable
         returns (uint256[] memory quoteAmounts)
     {
         uint256 length = quoteParams_.length;
