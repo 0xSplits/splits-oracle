@@ -7,8 +7,3 @@ import {OracleImpl} from "../OracleImpl.sol";
 interface IOracleFactory {
     function createOracle(bytes calldata data_) external returns (OracleImpl oracle);
 }
-
-struct CreateOracleParams {
-    IOracleFactory factory;
-    bytes data;
-}
