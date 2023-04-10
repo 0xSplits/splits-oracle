@@ -14,7 +14,7 @@ import {UniV3OracleImpl} from "./UniV3OracleImpl.sol";
 contract UniV3OracleFactory is IOracleFactory {
     using LibClone for address;
 
-    event CreateOracle(UniV3OracleImpl indexed oracle, UniV3OracleImpl.InitParams params);
+    event CreateUniV3Oracle(UniV3OracleImpl indexed oracle, UniV3OracleImpl.InitParams params);
 
     UniV3OracleImpl public immutable uniV3OracleImpl;
 
@@ -29,22 +29,22 @@ contract UniV3OracleFactory is IOracleFactory {
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    function createOracle(UniV3OracleImpl.InitParams calldata params_) external returns (UniV3OracleImpl) {
-        return _createOracle(params_);
+    function createUniV3Oracle(UniV3OracleImpl.InitParams calldata params_) external returns (UniV3OracleImpl) {
+        return _createUniV3Oracle(params_);
     }
 
     function createOracle(bytes calldata data_) external returns (OracleImpl) {
         UniV3OracleImpl.InitParams memory params = abi.decode(data_, (UniV3OracleImpl.InitParams));
-        return _createOracle(params);
+        return _createUniV3Oracle(params);
     }
 
     /// -----------------------------------------------------------------------
     /// functions - private & internal
     /// -----------------------------------------------------------------------
 
-    function _createOracle(UniV3OracleImpl.InitParams memory params_) internal returns (UniV3OracleImpl oracle) {
+    function _createUniV3Oracle(UniV3OracleImpl.InitParams memory params_) internal returns (UniV3OracleImpl oracle) {
         oracle = UniV3OracleImpl(address(uniV3OracleImpl).clone());
         oracle.initializer(params_);
-        emit CreateOracle({oracle: oracle, params: params_});
+        emit CreateUniV3Oracle({oracle: oracle, params: params_});
     }
 }

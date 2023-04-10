@@ -90,18 +90,18 @@ contract UniV3OracleImpl is OracleImpl {
     /// fee = 30_00 = 0.3% is the uniswap default
     /// unless overriden, getQuoteAmounts will revert if a non-permitted pool fee is used
     /// 3 bytes
-    uint24 public $defaultFee;
+    uint24 internal $defaultFee;
 
     /// default twap period
     /// @dev unless overriden, getQuoteAmounts will revert if zero
     /// 4 bytes
-    uint32 public $defaultPeriod;
+    uint32 internal $defaultPeriod;
 
     /// default price scaling factor
     /// @dev PERCENTAGE_SCALE = 1e6 = 100_00_00 = 100% = no discount or premium
     /// 99_00_00 = 99% = 1% discount to oracle; 101_00_00 = 101% = 1% premium to oracle
     /// 4 bytes
-    uint32 public $defaultScaledOfferFactor;
+    uint32 internal $defaultScaledOfferFactor;
 
     /// slot 1 - 0 bytes free
 
@@ -168,8 +168,20 @@ contract UniV3OracleImpl is OracleImpl {
     }
 
     /// -----------------------------------------------------------------------
-    /// functions - public & external - views
+    /// functions - public & external - view
     /// -----------------------------------------------------------------------
+
+    function defaultFee() external view returns (uint24) {
+        return $defaultFee;
+    }
+
+    function defaultPeriod() external view returns (uint32) {
+        return $defaultPeriod;
+    }
+
+    function defaultScaledOfferFactor() external view returns (uint32) {
+        return $defaultScaledOfferFactor;
+    }
 
     /// get pair override for an array of quote pairs
     function getPairOverrides(QuotePair[] calldata quotePairs_)

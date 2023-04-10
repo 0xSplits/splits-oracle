@@ -6,8 +6,6 @@ import {AddressUtils} from "splits-utils/AddressUtils.sol";
 import {IOracleFactory} from "../interfaces/IOracleFactory.sol";
 import {OracleImpl} from "../OracleImpl.sol";
 
-// TODO: add tests
-
 using {_parseIntoOracle} for OracleParams global;
 
 using AddressUtils for address;
