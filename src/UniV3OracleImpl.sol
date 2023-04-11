@@ -30,6 +30,7 @@ contract UniV3OracleImpl is OracleImpl {
 
     struct InitParams {
         address owner;
+        bool paused;
         uint24 defaultFee;
         uint32 defaultPeriod;
         uint32 defaultScaledOfferFactor;
@@ -54,7 +55,7 @@ contract UniV3OracleImpl is OracleImpl {
     event SetDefaultFee(uint24 defaultFee);
     event SetDefaultPeriod(uint32 defaultPeriod);
     event SetDefaultScaledOfferFactor(uint32 defaultScaledOfferFactor);
-    event SetPairOverride(SetPairOverrideParams[] params);
+    event SetPairOverrides(SetPairOverrideParams[] params);
 
     /// -----------------------------------------------------------------------
     /// storage
@@ -124,6 +125,7 @@ contract UniV3OracleImpl is OracleImpl {
         if (msg.sender != uniV3OracleFactory) revert Unauthorized();
 
         __initOwnable(params_.owner);
+        $paused = params_.paused;
         $defaultFee = params_.defaultFee;
         $defaultPeriod = params_.defaultPeriod;
         $defaultScaledOfferFactor = params_.defaultScaledOfferFactor;
@@ -164,7 +166,7 @@ contract UniV3OracleImpl is OracleImpl {
     /// set pair overrides
     function setPairOverrides(SetPairOverrideParams[] calldata params_) external onlyOwner {
         _setPairOverrides(params_);
-        emit SetPairOverride(params_);
+        emit SetPairOverrides(params_);
     }
 
     /// -----------------------------------------------------------------------
