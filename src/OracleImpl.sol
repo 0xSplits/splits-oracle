@@ -10,7 +10,7 @@ import {QuotePair} from "./utils/QuotePair.sol";
 /// @author 0xSplits
 /// @notice Oracle clone-implementation
 /// @dev acts as more of an interface
-abstract contract OracleImpl is OwnableImpl, PausableImpl {
+abstract contract OracleImpl is PausableImpl {
     /// slot 0 - 11 byte free
 
     /// OwnableImpl storage
