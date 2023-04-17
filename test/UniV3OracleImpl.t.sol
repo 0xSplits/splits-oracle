@@ -11,7 +11,6 @@ import {OracleParams} from "../src/peripherals/OracleParams.sol";
 import {UniV3OracleImpl} from "../src/UniV3OracleImpl.sol";
 
 // TODO: separate out fork tests
-
 // TODO: add fuzzing
 
 contract UniV3OracleImplTest is BaseTest {
@@ -427,7 +426,11 @@ contract UniV3OracleImplTest is BaseTest {
     /// tests - fuzz - setDefaultFee
     /// -----------------------------------------------------------------------
 
-    function testForkFuzz_revertWhen_callerNotOwner_setDefaultFee(uint24 newDefaultFee_) public {
+    function testForkFuzz_revertWhen_callerNotOwner_setDefaultFee(address notOwner_, uint24 newDefaultFee_) public {
+        UniV3OracleImpl.InitParams memory initParams = _initParams();
+
+        vm.assume(notOwner_ != initParams.owner);
+        vm.prank(notOwner_);
         vm.expectRevert(Unauthorized.selector);
         oracle.setDefaultFee(newDefaultFee_);
     }
@@ -453,7 +456,13 @@ contract UniV3OracleImplTest is BaseTest {
     /// tests - fuzz - setDefaultPeriod
     /// -----------------------------------------------------------------------
 
-    function testForkFuzz_revertWhen_callerNotOwner_setDefaultPeriod(uint32 newDefaultPeriod_) public {
+    function testForkFuzz_revertWhen_callerNotOwner_setDefaultPeriod(address notOwner_, uint32 newDefaultPeriod_)
+        public
+    {
+        UniV3OracleImpl.InitParams memory initParams = _initParams();
+
+        vm.assume(notOwner_ != initParams.owner);
+        vm.prank(notOwner_);
         vm.expectRevert(Unauthorized.selector);
         oracle.setDefaultPeriod(newDefaultPeriod_);
     }
@@ -479,9 +488,14 @@ contract UniV3OracleImplTest is BaseTest {
     /// tests - fuzz - setDefaultScaledOfferFactor
     /// -----------------------------------------------------------------------
 
-    function testForkFuzz_revertWhen_callerNotOwner_setDefaultScaledOfferFactor(uint32 newDefaultScaledOfferFactor_)
-        public
-    {
+    function testForkFuzz_revertWhen_callerNotOwner_setDefaultScaledOfferFactor(
+        address notOwner_,
+        uint32 newDefaultScaledOfferFactor_
+    ) public {
+        UniV3OracleImpl.InitParams memory initParams = _initParams();
+
+        vm.assume(notOwner_ != initParams.owner);
+        vm.prank(notOwner_);
         vm.expectRevert(Unauthorized.selector);
         oracle.setDefaultScaledOfferFactor(newDefaultScaledOfferFactor_);
     }
@@ -513,8 +527,13 @@ contract UniV3OracleImplTest is BaseTest {
     /// -----------------------------------------------------------------------
 
     function testForkFuzz_revertWhen_callerNotOwner_setPairOverrides(
+        address notOwner_,
         UniV3OracleImpl.SetPairOverrideParams[] memory newSetPairOverrides_
     ) public {
+        UniV3OracleImpl.InitParams memory initParams = _initParams();
+
+        vm.assume(notOwner_ != initParams.owner);
+        vm.prank(notOwner_);
         vm.expectRevert(Unauthorized.selector);
         oracle.setPairOverrides(newSetPairOverrides_);
     }
