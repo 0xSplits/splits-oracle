@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {OwnableImpl} from "splits-utils/OwnableImpl.sol";
 import {PausableImpl} from "splits-utils/PausableImpl.sol";
 
 import {QuotePair} from "./utils/QuotePair.sol";
