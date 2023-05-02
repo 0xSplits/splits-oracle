@@ -6,7 +6,7 @@ import "splits-tests/Base.t.sol";
 import {IUniswapV3PoolDerivedState} from "v3-core/interfaces/pool/IUniswapV3PoolDerivedState.sol";
 
 import {IUniswapV3Factory, UniV3OracleFactory} from "../src/UniV3OracleFactory.sol";
-import {OracleImpl, QuotePair} from "../src/OracleImpl.sol";
+import {IOracle, QuotePair} from "../src/interfaces/IOracle.sol";
 import {OracleParams} from "../src/peripherals/OracleParams.sol";
 import {UniV3OracleImpl} from "../src/UniV3OracleImpl.sol";
 
@@ -37,7 +37,7 @@ contract UniV3OracleImplTest is BaseTest {
 
     UniV3OracleImpl.SetPairOverrideParams[] pairOverrides;
 
-    OracleImpl.QuoteParams[] quoteParams;
+    IOracle.QuoteParams[] quoteParams;
 
     function setUp() public virtual override {
         super.setUp();
@@ -78,9 +78,9 @@ contract UniV3OracleImplTest is BaseTest {
 
         oracle = oracleFactory.createUniV3Oracle(_initParams());
 
-        quoteParams.push(OracleImpl.QuoteParams({quotePair: wethETH, baseAmount: 1 ether, data: ""}));
+        quoteParams.push(IOracle.QuoteParams({quotePair: wethETH, baseAmount: 1 ether, data: ""}));
         quoteParams.push(
-            OracleImpl.QuoteParams({
+            IOracle.QuoteParams({
                 quotePair: usdcETH,
                 baseAmount: 10 ** 9, // $1,000 usc ~= 0.5 eth
                 data: ""

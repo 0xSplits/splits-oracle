@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 
-import {OracleImpl} from "./OracleImpl.sol";
+import {IOracle} from "./interfaces/IOracle.sol";
 import {IOracleFactory} from "./interfaces/IOracleFactory.sol";
 import {UniV3OracleImpl} from "./UniV3OracleImpl.sol";
 
@@ -33,7 +33,7 @@ contract UniV3OracleFactory is IOracleFactory {
         return _createUniV3Oracle(params_);
     }
 
-    function createOracle(bytes calldata data_) external returns (OracleImpl) {
+    function createOracle(bytes calldata data_) external returns (IOracle) {
         UniV3OracleImpl.InitParams memory params = abi.decode(data_, (UniV3OracleImpl.InitParams));
         return _createUniV3Oracle(params);
     }
