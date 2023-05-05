@@ -92,7 +92,6 @@ contract UniV3OracleFactoryTest is BaseTest {
             paused: false,
             defaultFee: 30_00, // = 0.3%
             defaultPeriod: 30 minutes,
-            defaultScaledOfferFactor: PERCENTAGE_SCALE,
             pairOverrides: pairOverrides
         });
     }
