@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import {ConvertedQuotePair, QuotePair, QuoteParams, SortedConvertedQuotePair} from "splits-utils/LibQuotes.sol";
 import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {OracleLibrary} from "v3-periphery/libraries/OracleLibrary.sol";
+import {QuoteParams} from "splits-utils/QuoteParams.sol";
 import {TokenUtils} from "splits-utils/TokenUtils.sol";
 
 import {OracleImpl} from "./OracleImpl.sol";
