@@ -23,7 +23,7 @@ contract UniV3OracleImpl is OracleImpl {
     /// errors
     /// -----------------------------------------------------------------------
 
-    error Pool_DoesNotExist();
+    error Pool_NotSet();
 
     /// -----------------------------------------------------------------------
     /// structs
@@ -32,7 +32,6 @@ contract UniV3OracleImpl is OracleImpl {
     struct InitParams {
         address owner;
         bool paused;
-        uint24 defaultFee;
         uint32 defaultPeriod;
         SetPairOverrideParams[] pairOverrides;
     }
@@ -43,7 +42,7 @@ contract UniV3OracleImpl is OracleImpl {
     }
 
     struct PairOverride {
-        uint24 fee;
+        address pool;
         uint32 period;
     }
 
@@ -51,7 +50,6 @@ contract UniV3OracleImpl is OracleImpl {
     /// events
     /// -----------------------------------------------------------------------
 
-    event SetDefaultFee(uint24 defaultFee);
     event SetDefaultPeriod(uint32 defaultPeriod);
     event SetPairOverrides(SetPairOverrideParams[] params);
 
@@ -63,15 +61,14 @@ contract UniV3OracleImpl is OracleImpl {
     /// storage - constants & immutables
     /// -----------------------------------------------------------------------
 
-    address public immutable uniV3OracleFactory;
-    IUniswapV3Factory public immutable uniswapV3Factory;
     address public immutable weth9;
+    address public immutable uniV3OracleFactory;
 
     /// -----------------------------------------------------------------------
     /// storage - mutables
     /// -----------------------------------------------------------------------
 
-    /// slot 0 - 4 byte free
+    /// slot 0 - 7 byte free
 
     /// OwnableImpl storage
     /// address internal $owner;
@@ -80,13 +77,6 @@ contract UniV3OracleImpl is OracleImpl {
     /// PausableImpl storage
     /// bool internal $paused;
     /// 1 byte
-
-    /// default uniswap pool fee
-    /// @dev PERCENTAGE_SCALE = 1e6 = 100_00_00 = 100%;
-    /// fee = 30_00 = 0.3% is the uniswap default
-    /// unless overriden, getQuoteAmounts will revert if a non-permitted pool fee is used
-    /// 3 bytes
-    uint24 internal $defaultFee;
 
     /// default twap period
     /// @dev unless overriden, getQuoteAmounts will revert if zero
@@ -103,10 +93,9 @@ contract UniV3OracleImpl is OracleImpl {
     /// constructor & initializer
     /// -----------------------------------------------------------------------
 
-    constructor(IUniswapV3Factory uniswapV3Factory_, address weth9_) {
-        uniV3OracleFactory = msg.sender;
-        uniswapV3Factory = uniswapV3Factory_;
+    constructor(address weth9_) {
         weth9 = weth9_;
+        uniV3OracleFactory = msg.sender;
     }
 
     function initializer(InitParams calldata params_) external {
@@ -115,7 +104,6 @@ contract UniV3OracleImpl is OracleImpl {
 
         __initOwnable(params_.owner);
         $paused = params_.paused;
-        $defaultFee = params_.defaultFee;
         $defaultPeriod = params_.defaultPeriod;
 
         _setPairOverrides(params_.pairOverrides);
@@ -133,12 +121,6 @@ contract UniV3OracleImpl is OracleImpl {
     /// functions - public & external - onlyOwner
     /// -----------------------------------------------------------------------
 
-    /// set defaultFee
-    function setDefaultFee(uint24 defaultFee_) external onlyOwner {
-        $defaultFee = defaultFee_;
-        emit SetDefaultFee(defaultFee_);
-    }
-
     /// set defaultPeriod
     function setDefaultPeriod(uint32 defaultPeriod_) external onlyOwner {
         $defaultPeriod = defaultPeriod_;
@@ -154,10 +136,6 @@ contract UniV3OracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
     /// functions - public & external - view
     /// -----------------------------------------------------------------------
-
-    function defaultFee() external view returns (uint24) {
-        return $defaultFee;
-    }
 
     function defaultPeriod() external view returns (uint32) {
         return $defaultPeriod;
@@ -232,20 +210,15 @@ contract UniV3OracleImpl is OracleImpl {
         }
 
         PairOverride memory po = _getPairOverride(cqp._sort());
-        if (po.fee == 0) {
-            po.fee = $defaultFee;
+        if (po.pool == address(0)) {
+            revert Pool_NotSet();
         }
         if (po.period == 0) {
             po.period = $defaultPeriod;
         }
 
-        address pool = uniswapV3Factory.getPool(cqp.cBase, cqp.cQuote, po.fee);
-        if (pool == address(0)) {
-            revert Pool_DoesNotExist();
-        }
-
         // reverts if period is zero or > oldest observation
-        (int24 arithmeticMeanTick,) = OracleLibrary.consult({pool: pool, secondsAgo: po.period});
+        (int24 arithmeticMeanTick,) = OracleLibrary.consult({pool: po.pool, secondsAgo: po.period});
 
         return OracleLibrary.getQuoteAtTick({
             tick: arithmeticMeanTick + 1, // adjust for OracleLibrary always rounding down
