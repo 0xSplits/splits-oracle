@@ -8,8 +8,7 @@ import {IUniswapV3PoolDerivedState} from "v3-core/interfaces/pool/IUniswapV3Pool
 import {IUniswapV3Factory, UniV3OracleFactory} from "../src/UniV3OracleFactory.sol";
 import {IOracle} from "../src/interfaces/IOracle.sol";
 import {OracleParams} from "../src/peripherals/OracleParams.sol";
-import {QuotePair} from "splits-utils/QuotePair.sol";
-import {QuoteParams} from "splits-utils/QuoteParams.sol";
+import {QuotePair, QuoteParams} from "splits-utils/LibQuotes.sol";
 import {UniV3OracleImpl} from "../src/UniV3OracleImpl.sol";
 
 // TODO: separate out fork tests

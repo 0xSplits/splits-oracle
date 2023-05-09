@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {ConvertedQuotePair, QuotePair, SortedConvertedQuotePair} from "splits-utils/QuotePair.sol";
+import {ConvertedQuotePair, QuotePair, QuoteParams, SortedConvertedQuotePair} from "splits-utils/LibQuotes.sol";
 import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {OracleLibrary} from "v3-periphery/libraries/OracleLibrary.sol";
-import {QuoteParams} from "splits-utils/QuoteParams.sol";
 import {TokenUtils} from "splits-utils/TokenUtils.sol";
 
 import {OracleImpl} from "./OracleImpl.sol";
@@ -214,7 +213,7 @@ contract UniV3OracleImpl is OracleImpl {
 
     /// set pair override
     function _setPairOverride(SetPairOverrideParams calldata params_) internal {
-        SortedConvertedQuotePair memory scqp = _convertAndSortQuotePair(params_.quotePair);
+        SortedConvertedQuotePair memory scqp = _convertAndSort(params_.quotePair);
         $_pairOverrides[scqp.cToken0][scqp.cToken1] = params_.pairOverride;
     }
 
@@ -257,7 +256,7 @@ contract UniV3OracleImpl is OracleImpl {
 
     /// get pair override
     function _getPairOverride(QuotePair calldata quotePair_) internal view returns (PairOverride memory) {
-        return _getPairOverride(_convertAndSortQuotePair(quotePair_));
+        return _getPairOverride(_convertAndSort(quotePair_));
     }
 
     /// get pair overrides
@@ -266,12 +265,12 @@ contract UniV3OracleImpl is OracleImpl {
     }
 
     /// convert & sort tokens into canonical order
-    function _convertAndSortQuotePair(QuotePair calldata quotePair_)
+    function _convertAndSort(QuotePair calldata quotePair_)
         internal
         view
         returns (SortedConvertedQuotePair memory)
     {
-        return quotePair_._convert(_convertToken)._sort();
+        return quotePair_._convertAndSort(_convertToken);
     }
 
     /// convert eth (0x0) to weth
