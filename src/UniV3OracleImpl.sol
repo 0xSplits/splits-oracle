@@ -8,6 +8,7 @@ import {QuoteParams} from "splits-utils/QuoteParams.sol";
 import {TokenUtils} from "splits-utils/TokenUtils.sol";
 
 import {OracleImpl} from "./OracleImpl.sol";
+import {PairDetails} from "./libraries/PairDetails.sol";
 
 /// @title UniV3 Oracle Implementation
 /// @author 0xSplits
@@ -18,12 +19,13 @@ contract UniV3OracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
 
     using TokenUtils for address;
+    using PairDetails for mapping(address => mapping(address => PairDetail));
 
     /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
 
-    error Pool_NotSet();
+    error InvalidPair_PoolNotSet();
 
     /// -----------------------------------------------------------------------
     /// structs
@@ -33,15 +35,15 @@ contract UniV3OracleImpl is OracleImpl {
         address owner;
         bool paused;
         uint32 defaultPeriod;
-        SetPairOverrideParams[] pairOverrides;
+        SetPairDetailParams[] pairDetails;
     }
 
-    struct SetPairOverrideParams {
+    struct SetPairDetailParams {
         QuotePair quotePair;
-        PairOverride pairOverride;
+        PairDetail pairDetail;
     }
 
-    struct PairOverride {
+    struct PairDetail {
         address pool;
         uint32 period;
     }
@@ -51,7 +53,7 @@ contract UniV3OracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
 
     event SetDefaultPeriod(uint32 defaultPeriod);
-    event SetPairOverrides(SetPairOverrideParams[] params);
+    event SetPairDetails(SetPairDetailParams[] params);
 
     /// -----------------------------------------------------------------------
     /// storage
@@ -87,7 +89,7 @@ contract UniV3OracleImpl is OracleImpl {
 
     /// overrides for specific quote pairs
     /// 32 bytes
-    mapping(address => mapping(address => PairOverride)) internal $_pairOverrides;
+    mapping(address => mapping(address => PairDetail)) internal $_pairDetails;
 
     /// -----------------------------------------------------------------------
     /// constructor & initializer
@@ -106,7 +108,7 @@ contract UniV3OracleImpl is OracleImpl {
         $paused = params_.paused;
         $defaultPeriod = params_.defaultPeriod;
 
-        _setPairOverrides(params_.pairOverrides);
+        _setPairDetails(params_.pairDetails);
     }
 
     /// -----------------------------------------------------------------------
@@ -128,9 +130,9 @@ contract UniV3OracleImpl is OracleImpl {
     }
 
     /// set pair overrides
-    function setPairOverrides(SetPairOverrideParams[] calldata params_) external onlyOwner {
-        _setPairOverrides(params_);
-        emit SetPairOverrides(params_);
+    function setPairDetails(SetPairDetailParams[] calldata params_) external onlyOwner {
+        _setPairDetails(params_);
+        emit SetPairDetails(params_);
     }
 
     /// -----------------------------------------------------------------------
@@ -142,15 +144,11 @@ contract UniV3OracleImpl is OracleImpl {
     }
 
     /// get pair override for an array of quote pairs
-    function getPairOverrides(QuotePair[] calldata quotePairs_)
-        external
-        view
-        returns (PairOverride[] memory pairOverrides)
-    {
+    function getPairDetails(QuotePair[] calldata quotePairs_) external view returns (PairDetail[] memory pairDetails) {
         uint256 length = quotePairs_.length;
-        pairOverrides = new PairOverride[](length);
+        pairDetails = new PairDetail[](length);
         for (uint256 i; i < length;) {
-            pairOverrides[i] = _getPairOverride(quotePairs_[i]);
+            pairDetails[i] = $_pairDetails._get(_convert, quotePairs_[i]);
             unchecked {
                 ++i;
             }
@@ -180,20 +178,8 @@ contract UniV3OracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
 
     /// set pair overrides
-    function _setPairOverrides(SetPairOverrideParams[] calldata params_) internal {
-        uint256 length = params_.length;
-        for (uint256 i; i < length;) {
-            _setPairOverride(params_[i]);
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    /// set pair override
-    function _setPairOverride(SetPairOverrideParams calldata params_) internal {
-        SortedConvertedQuotePair memory scqp = _convertAndSort(params_.quotePair);
-        $_pairOverrides[scqp.cToken0][scqp.cToken1] = params_.pairOverride;
+    function _setPairDetails(SetPairDetailParams[] calldata params_) internal {
+        $_pairDetails._set(_convert, params_);
     }
 
     /// -----------------------------------------------------------------------
@@ -202,16 +188,16 @@ contract UniV3OracleImpl is OracleImpl {
 
     /// get quote amount for a trade
     function _getQuoteAmount(QuoteParams calldata quoteParams_) internal view returns (uint256) {
-        ConvertedQuotePair memory cqp = quoteParams_.quotePair._convert(_convertToken);
+        ConvertedQuotePair memory cqp = quoteParams_.quotePair._convert(_convert);
 
         // skip oracle if converted tokens are equal
         if (cqp.cBase == cqp.cQuote) {
             return quoteParams_.baseAmount;
         }
 
-        PairOverride memory po = _getPairOverride(cqp._sort());
+        PairDetail memory po = $_pairDetails._get(cqp._sort());
         if (po.pool == address(0)) {
-            revert Pool_NotSet();
+            revert InvalidPair_PoolNotSet();
         }
         if (po.period == 0) {
             po.period = $defaultPeriod;
@@ -228,27 +214,8 @@ contract UniV3OracleImpl is OracleImpl {
         });
     }
 
-    /// get pair override
-    function _getPairOverride(QuotePair calldata quotePair_) internal view returns (PairOverride memory) {
-        return _getPairOverride(_convertAndSort(quotePair_));
-    }
-
-    /// get pair overrides
-    function _getPairOverride(SortedConvertedQuotePair memory scqp_) internal view returns (PairOverride memory) {
-        return $_pairOverrides[scqp_.cToken0][scqp_.cToken1];
-    }
-
-    /// convert & sort tokens into canonical order
-    function _convertAndSort(QuotePair calldata quotePair_)
-        internal
-        view
-        returns (SortedConvertedQuotePair memory)
-    {
-        return quotePair_._convertAndSort(_convertToken);
-    }
-
     /// convert eth (0x0) to weth
-    function _convertToken(address token_) internal view returns (address) {
+    function _convert(address token_) internal view returns (address) {
         return token_._isETH() ? weth9 : token_;
     }
 }

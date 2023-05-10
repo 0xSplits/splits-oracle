@@ -21,12 +21,12 @@ contract UniV3OracleImplTest is BaseTest {
     error Unauthorized();
     error Paused();
 
-    error Pool_NotSet();
+    error InvalidPair_PoolNotSet();
 
     event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);
 
     event SetDefaultPeriod(uint32 defaultPeriod);
-    event SetPairOverrides(UniV3OracleImpl.SetPairOverrideParams[] params);
+    event SetPairDetails(UniV3OracleImpl.SetPairDetailParams[] params);
 
     UniV3OracleFactory oracleFactory;
     UniV3OracleImpl oracleImpl;
@@ -35,7 +35,7 @@ contract UniV3OracleImplTest is BaseTest {
     QuotePair wethETH;
     QuotePair usdcETH;
 
-    UniV3OracleImpl.SetPairOverrideParams[] pairOverrides;
+    UniV3OracleImpl.SetPairDetailParams[] pairDetails;
 
     QuoteParams[] quoteParams;
 
@@ -57,19 +57,19 @@ contract UniV3OracleImplTest is BaseTest {
         wethETH = QuotePair({base: WETH9, quote: ETH_ADDRESS});
         usdcETH = QuotePair({base: USDC, quote: ETH_ADDRESS});
 
-        pairOverrides.push(
-            UniV3OracleImpl.SetPairOverrideParams({
+        pairDetails.push(
+            UniV3OracleImpl.SetPairDetailParams({
                 quotePair: wethETH,
-                pairOverride: UniV3OracleImpl.PairOverride({
+                pairDetail: UniV3OracleImpl.PairDetail({
                     pool: address(0), // no override
                     period: 0 // no override
                 })
             })
         );
-        pairOverrides.push(
-            UniV3OracleImpl.SetPairOverrideParams({
+        pairDetails.push(
+            UniV3OracleImpl.SetPairDetailParams({
                 quotePair: usdcETH,
-                pairOverride: UniV3OracleImpl.PairOverride({
+                pairDetail: UniV3OracleImpl.PairDetail({
                     pool: IUniswapV3Factory(UNISWAP_V3_FACTORY).getPool(USDC, WETH9, 5_00),
                     period: 0 // no override
                 })
@@ -93,7 +93,7 @@ contract UniV3OracleImplTest is BaseTest {
             owner: users.alice,
             paused: false,
             defaultPeriod: 30 minutes,
-            pairOverrides: pairOverrides
+            pairDetails: pairDetails
         });
     }
 
@@ -155,20 +155,20 @@ contract UniV3OracleImplTest is BaseTest {
         assertEq(oracle.defaultPeriod(), initParams.defaultPeriod);
     }
 
-    function testFork_initializer_setsPairOverrides() public callerFactory {
+    function testFork_initializer_setsPairDetails() public callerFactory {
         UniV3OracleImpl.InitParams memory initParams = _initParams();
 
         vm.prank(address(oracleFactory));
         oracle.initializer(initParams);
 
-        uint256 length = initParams.pairOverrides.length;
+        uint256 length = initParams.pairDetails.length;
         QuotePair[] memory initQuotePairs = new QuotePair[](length);
-        UniV3OracleImpl.PairOverride[] memory initPairOverrides = new UniV3OracleImpl.PairOverride[](length);
+        UniV3OracleImpl.PairDetail[] memory initPairDetails = new UniV3OracleImpl.PairDetail[](length);
         for (uint256 i; i < length; i++) {
-            initQuotePairs[i] = initParams.pairOverrides[i].quotePair;
-            initPairOverrides[i] = initParams.pairOverrides[i].pairOverride;
+            initQuotePairs[i] = initParams.pairDetails[i].quotePair;
+            initPairDetails[i] = initParams.pairDetails[i].pairDetail;
         }
-        assertEq(oracle.getPairOverrides(initQuotePairs), initPairOverrides);
+        assertEq(oracle.getPairDetails(initQuotePairs), initPairDetails);
     }
 
     function testFork_initializer_emitsOwnershipTransferred() public callerFactory {
@@ -210,54 +210,54 @@ contract UniV3OracleImplTest is BaseTest {
     }
 
     /// -----------------------------------------------------------------------
-    /// tests - basic - setPairOverrides
+    /// tests - basic - setPairDetails
     /// -----------------------------------------------------------------------
 
-    function testFork_revertWhen_callerNotOwner_setPairOverrides() public {
+    function testFork_revertWhen_callerNotOwner_setPairDetails() public {
         vm.expectRevert(Unauthorized.selector);
-        oracle.setPairOverrides(pairOverrides);
+        oracle.setPairDetails(pairDetails);
     }
 
-    function testFork_setPairOverrides_setsPairOverrides() public callerOwner {
+    function testFork_setPairDetails_setsPairDetails() public callerOwner {
         UniV3OracleImpl.InitParams memory initParams = _initParams();
 
-        pairOverrides[0] = UniV3OracleImpl.SetPairOverrideParams({
+        pairDetails[0] = UniV3OracleImpl.SetPairDetailParams({
             quotePair: QuotePair({base: WETH9, quote: ETH_ADDRESS}),
-            pairOverride: UniV3OracleImpl.PairOverride({pool: address(0), period: 0})
+            pairDetail: UniV3OracleImpl.PairDetail({pool: address(0), period: 0})
         });
-        pairOverrides[1] = UniV3OracleImpl.SetPairOverrideParams({
+        pairDetails[1] = UniV3OracleImpl.SetPairDetailParams({
             quotePair: QuotePair({base: USDC, quote: ETH_ADDRESS}),
-            pairOverride: UniV3OracleImpl.PairOverride({
+            pairDetail: UniV3OracleImpl.PairDetail({
                 pool: IUniswapV3Factory(UNISWAP_V3_FACTORY).getPool(USDC, WETH9, 30_00),
                 period: 10 minutes
             })
         });
-        uint256 length = pairOverrides.length;
+        uint256 length = pairDetails.length;
 
         vm.prank(initParams.owner);
-        oracle.setPairOverrides(pairOverrides);
+        oracle.setPairDetails(pairDetails);
 
         QuotePair[] memory quotePairs = new QuotePair[](length);
-        UniV3OracleImpl.PairOverride[] memory newPairOverrides = new UniV3OracleImpl.PairOverride[](length);
+        UniV3OracleImpl.PairDetail[] memory newPairDetails = new UniV3OracleImpl.PairDetail[](length);
         for (uint256 i; i < length; i++) {
-            quotePairs[i] = pairOverrides[i].quotePair;
-            newPairOverrides[i] = pairOverrides[i].pairOverride;
+            quotePairs[i] = pairDetails[i].quotePair;
+            newPairDetails[i] = pairDetails[i].pairDetail;
         }
-        assertEq(oracle.getPairOverrides(quotePairs), newPairOverrides);
+        assertEq(oracle.getPairDetails(quotePairs), newPairDetails);
     }
 
-    function testFork_setPairOverrides_emitsSetPairOverrides() public callerOwner {
+    function testFork_setPairDetails_emitsSetPairDetails() public callerOwner {
         UniV3OracleImpl.InitParams memory initParams = _initParams();
 
         // TODO: use setup?
 
-        pairOverrides[0] = UniV3OracleImpl.SetPairOverrideParams({
+        pairDetails[0] = UniV3OracleImpl.SetPairDetailParams({
             quotePair: wethETH,
-            pairOverride: UniV3OracleImpl.PairOverride({pool: address(0), period: 0})
+            pairDetail: UniV3OracleImpl.PairDetail({pool: address(0), period: 0})
         });
-        pairOverrides[1] = UniV3OracleImpl.SetPairOverrideParams({
+        pairDetails[1] = UniV3OracleImpl.SetPairDetailParams({
             quotePair: usdcETH,
-            pairOverride: UniV3OracleImpl.PairOverride({
+            pairDetail: UniV3OracleImpl.PairDetail({
                 pool: IUniswapV3Factory(UNISWAP_V3_FACTORY).getPool(USDC, WETH9, 30_00),
                 period: 10 minutes
             })
@@ -265,8 +265,8 @@ contract UniV3OracleImplTest is BaseTest {
 
         vm.prank(initParams.owner);
         vm.expectEmit();
-        emit SetPairOverrides(pairOverrides);
-        oracle.setPairOverrides(pairOverrides);
+        emit SetPairDetails(pairDetails);
+        oracle.setPairDetails(pairDetails);
     }
 
     /// -----------------------------------------------------------------------
@@ -302,19 +302,19 @@ contract UniV3OracleImplTest is BaseTest {
 
         vm.prank(initParams.owner);
 
-        delete pairOverrides;
-        pairOverrides.push(
-            UniV3OracleImpl.SetPairOverrideParams({
+        delete pairDetails;
+        pairDetails.push(
+            UniV3OracleImpl.SetPairDetailParams({
                 quotePair: usdcETH,
-                pairOverride: UniV3OracleImpl.PairOverride({
+                pairDetail: UniV3OracleImpl.PairDetail({
                     pool: address(0),
                     period: 0 // no override
                 })
             })
         );
-        oracle.setPairOverrides(pairOverrides);
+        oracle.setPairDetails(pairDetails);
 
-        vm.expectRevert(Pool_NotSet.selector);
+        vm.expectRevert(InvalidPair_PoolNotSet.selector);
         oracle.getQuoteAmounts(quoteParams);
     }
 
@@ -378,66 +378,66 @@ contract UniV3OracleImplTest is BaseTest {
     }
 
     /// -----------------------------------------------------------------------
-    /// tests - fuzz - setPairOverrides
+    /// tests - fuzz - setPairDetails
     /// -----------------------------------------------------------------------
 
-    function testForkFuzz_revertWhen_callerNotOwner_setPairOverrides(
+    function testForkFuzz_revertWhen_callerNotOwner_setPairDetails(
         address notOwner_,
-        UniV3OracleImpl.SetPairOverrideParams[] memory newSetPairOverrides_
+        UniV3OracleImpl.SetPairDetailParams[] memory newSetPairDetails_
     ) public {
         UniV3OracleImpl.InitParams memory initParams = _initParams();
 
         vm.assume(notOwner_ != initParams.owner);
         vm.prank(notOwner_);
         vm.expectRevert(Unauthorized.selector);
-        oracle.setPairOverrides(newSetPairOverrides_);
+        oracle.setPairDetails(newSetPairDetails_);
     }
 
     // TODO: upgrade to test array; need to prune converted duplicates
-    function testForkFuzz_setPairOverrides_setsPairOverrides(
-        UniV3OracleImpl.SetPairOverrideParams memory newSetPairOverrides_
-    ) public callerOwner {
+    function testForkFuzz_setPairDetails_setsPairDetails(UniV3OracleImpl.SetPairDetailParams memory newSetPairDetails_)
+        public
+        callerOwner
+    {
         uint256 length = 1;
         UniV3OracleImpl.InitParams memory initParams = _initParams();
-        UniV3OracleImpl.SetPairOverrideParams[] memory newSetPairOverrides =
-            new UniV3OracleImpl.SetPairOverrideParams[](1);
-        newSetPairOverrides[0] = newSetPairOverrides_;
+        UniV3OracleImpl.SetPairDetailParams[] memory newSetPairDetails = new UniV3OracleImpl.SetPairDetailParams[](1);
+        newSetPairDetails[0] = newSetPairDetails_;
 
         vm.prank(initParams.owner);
-        oracle.setPairOverrides(newSetPairOverrides);
+        oracle.setPairDetails(newSetPairDetails);
 
         QuotePair[] memory quotePairs = new QuotePair[](length);
-        UniV3OracleImpl.PairOverride[] memory newPairOverrides = new UniV3OracleImpl.PairOverride[](length);
+        UniV3OracleImpl.PairDetail[] memory newPairDetails = new UniV3OracleImpl.PairDetail[](length);
         for (uint256 i; i < length; i++) {
-            quotePairs[i] = newSetPairOverrides[i].quotePair;
-            newPairOverrides[i] = newSetPairOverrides[i].pairOverride;
+            quotePairs[i] = newSetPairDetails[i].quotePair;
+            newPairDetails[i] = newSetPairDetails[i].pairDetail;
         }
-        assertEq(oracle.getPairOverrides(quotePairs), newPairOverrides);
+        assertEq(oracle.getPairDetails(quotePairs), newPairDetails);
     }
 
-    function testForkFuzz_setPairOverrides_emitsSetPairOverrides(
-        UniV3OracleImpl.SetPairOverrideParams[] memory newSetPairOverrides_
+    function testForkFuzz_setPairDetails_emitsSetPairDetails(
+        UniV3OracleImpl.SetPairDetailParams[] memory newSetPairDetails_
     ) public callerOwner {
         UniV3OracleImpl.InitParams memory initParams = _initParams();
 
         vm.prank(initParams.owner);
         vm.expectEmit();
-        emit SetPairOverrides(newSetPairOverrides_);
-        oracle.setPairOverrides(newSetPairOverrides_);
+        emit SetPairDetails(newSetPairDetails_);
+        oracle.setPairDetails(newSetPairDetails_);
     }
 
     /// -----------------------------------------------------------------------
     /// internal
     /// -----------------------------------------------------------------------
 
-    function assertEq(UniV3OracleImpl.PairOverride[] memory a, UniV3OracleImpl.PairOverride[] memory b) internal {
+    function assertEq(UniV3OracleImpl.PairDetail[] memory a, UniV3OracleImpl.PairDetail[] memory b) internal {
         assertEq(a.length, b.length);
         for (uint256 i; i < a.length; i++) {
             assertEq(a[i], b[i]);
         }
     }
 
-    function assertEq(UniV3OracleImpl.PairOverride memory a, UniV3OracleImpl.PairOverride memory b) internal {
+    function assertEq(UniV3OracleImpl.PairDetail memory a, UniV3OracleImpl.PairDetail memory b) internal {
         assertEq(a.pool, b.pool);
         assertEq(a.period, b.period);
     }

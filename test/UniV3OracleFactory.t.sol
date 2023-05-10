@@ -14,7 +14,7 @@ contract UniV3OracleFactoryTest is BaseTest {
     UniV3OracleFactory oracleFactory;
     UniV3OracleImpl oracleImpl;
 
-    UniV3OracleImpl.SetPairOverrideParams[] pairOverrides;
+    UniV3OracleImpl.SetPairDetailParams[] pairDetails;
 
     function setUp() public virtual override {
         super.setUp();
@@ -32,7 +32,7 @@ contract UniV3OracleFactoryTest is BaseTest {
             owner: users.alice,
             paused: false,
             defaultPeriod: 30 minutes,
-            pairOverrides: pairOverrides
+            pairDetails: pairDetails
         });
     }
 
