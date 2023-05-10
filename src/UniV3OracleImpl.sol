@@ -275,7 +275,7 @@ contract UniV3OracleImpl is OracleImpl {
         (int24 arithmeticMeanTick,) = OracleLibrary.consult({pool: pool, secondsAgo: po.period});
 
         uint256 unscaledAmountToBeneficiary = OracleLibrary.getQuoteAtTick({
-            tick: arithmeticMeanTick,
+            tick: arithmeticMeanTick + 1, // adjust for OracleLibrary always rounding down
             baseAmount: quoteParams_.baseAmount,
             baseToken: cqp.cBase,
             quoteToken: cqp.cQuote
