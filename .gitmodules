@@ -18,4 +18,3 @@
 [submodule "lib/splits-utils"]
 	path = lib/splits-utils
 	url = https://github.com/0xsplits/splits-utils
-	branch = move-discount-to-swapper
