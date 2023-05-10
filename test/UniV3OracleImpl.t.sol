@@ -6,8 +6,9 @@ import "splits-tests/Base.t.sol";
 import {IUniswapV3PoolDerivedState} from "v3-core/interfaces/pool/IUniswapV3PoolDerivedState.sol";
 
 import {IUniswapV3Factory, UniV3OracleFactory} from "../src/UniV3OracleFactory.sol";
-import {IOracle, QuotePair} from "../src/interfaces/IOracle.sol";
+import {IOracle} from "../src/interfaces/IOracle.sol";
 import {OracleParams} from "../src/peripherals/OracleParams.sol";
+import {QuotePair, QuoteParams} from "splits-utils/LibQuotes.sol";
 import {UniV3OracleImpl} from "../src/UniV3OracleImpl.sol";
 
 // TODO: separate out fork tests
@@ -25,7 +26,6 @@ contract UniV3OracleImplTest is BaseTest {
 
     event SetDefaultFee(uint24 defaultFee);
     event SetDefaultPeriod(uint32 defaultPeriod);
-    event SetDefaultScaledOfferFactor(uint32 defaultScaledOfferFactor);
     event SetPairOverrides(UniV3OracleImpl.SetPairOverrideParams[] params);
 
     UniV3OracleFactory oracleFactory;
@@ -37,13 +37,16 @@ contract UniV3OracleImplTest is BaseTest {
 
     UniV3OracleImpl.SetPairOverrideParams[] pairOverrides;
 
-    IOracle.QuoteParams[] quoteParams;
+    QuoteParams[] quoteParams;
 
     function setUp() public virtual override {
         super.setUp();
 
+        // TODO: can vm.rpcUrl be used in Base ?
+        /* forkId = vm.createSelectFork(vm.rpcUrl("mainnet"), BLOCK_NUMBER); */
         string memory MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
         vm.createSelectFork(MAINNET_RPC_URL, BLOCK_NUMBER);
+        // TODO: check out makePersistent cheatcode ?
 
         // set up oracle
         oracleFactory = new UniV3OracleFactory({
@@ -60,8 +63,7 @@ contract UniV3OracleImplTest is BaseTest {
                 quotePair: wethETH,
                 pairOverride: UniV3OracleImpl.PairOverride({
                     fee: 0, // no override
-                    period: 0, // no override
-                    scaledOfferFactor: 99_90_00
+                    period: 0 // no override
                 })
             })
         );
@@ -70,17 +72,16 @@ contract UniV3OracleImplTest is BaseTest {
                 quotePair: usdcETH,
                 pairOverride: UniV3OracleImpl.PairOverride({
                     fee: 5_00,
-                    period: 0, // no override
-                    scaledOfferFactor: 0 // no override
+                    period: 0 // no override
                 })
             })
         );
 
         oracle = oracleFactory.createUniV3Oracle(_initParams());
 
-        quoteParams.push(IOracle.QuoteParams({quotePair: wethETH, baseAmount: 1 ether, data: ""}));
+        quoteParams.push(QuoteParams({quotePair: wethETH, baseAmount: 1 ether, data: ""}));
         quoteParams.push(
-            IOracle.QuoteParams({
+            QuoteParams({
                 quotePair: usdcETH,
                 baseAmount: 10 ** 9, // $1,000 usc ~= 0.5 eth
                 data: ""
@@ -94,7 +95,6 @@ contract UniV3OracleImplTest is BaseTest {
             paused: false,
             defaultFee: 30_00,
             defaultPeriod: 30 minutes,
-            defaultScaledOfferFactor: 99_00_00,
             pairOverrides: pairOverrides
         });
     }
@@ -163,14 +163,6 @@ contract UniV3OracleImplTest is BaseTest {
         vm.prank(address(oracleFactory));
         oracle.initializer(initParams);
         assertEq(oracle.defaultPeriod(), initParams.defaultPeriod);
-    }
-
-    function testFork_initializer_setsDefaultScaledOfferFactor() public callerFactory {
-        UniV3OracleImpl.InitParams memory initParams = _initParams();
-
-        vm.prank(address(oracleFactory));
-        oracle.initializer(initParams);
-        assertEq(oracle.defaultScaledOfferFactor(), initParams.defaultScaledOfferFactor);
     }
 
     function testFork_initializer_setsPairOverrides() public callerFactory {
@@ -257,35 +249,6 @@ contract UniV3OracleImplTest is BaseTest {
     }
 
     /// -----------------------------------------------------------------------
-    /// tests - basic - setDefaultScaledOfferFactor
-    /// -----------------------------------------------------------------------
-
-    function testFork_revertWhen_callerNotOwner_setDefaultScaledOfferFactor() public {
-        uint32 newDefaultScaledOfferFactor = 98_00_00;
-        vm.expectRevert(Unauthorized.selector);
-        oracle.setDefaultScaledOfferFactor(newDefaultScaledOfferFactor);
-    }
-
-    function testFork_setDefaultScaledOfferFactor_setsDefaultScaledOfferFactor() public callerOwner {
-        UniV3OracleImpl.InitParams memory initParams = _initParams();
-        uint32 newDefaultScaledOfferFactor = 98_00_00;
-
-        vm.prank(initParams.owner);
-        oracle.setDefaultScaledOfferFactor(newDefaultScaledOfferFactor);
-        assertEq(oracle.defaultScaledOfferFactor(), newDefaultScaledOfferFactor);
-    }
-
-    function testFork_setDefaultScaledOfferFactor_emitsSetDefaultScaledOfferFactor() public callerOwner {
-        UniV3OracleImpl.InitParams memory initParams = _initParams();
-        uint32 newDefaultScaledOfferFactor = 98_00_00;
-
-        vm.prank(initParams.owner);
-        vm.expectEmit();
-        emit SetDefaultScaledOfferFactor(newDefaultScaledOfferFactor);
-        oracle.setDefaultScaledOfferFactor(newDefaultScaledOfferFactor);
-    }
-
-    /// -----------------------------------------------------------------------
     /// tests - basic - setPairOverrides
     /// -----------------------------------------------------------------------
 
@@ -299,11 +262,11 @@ contract UniV3OracleImplTest is BaseTest {
 
         pairOverrides[0] = UniV3OracleImpl.SetPairOverrideParams({
             quotePair: QuotePair({base: WETH9, quote: ETH_ADDRESS}),
-            pairOverride: UniV3OracleImpl.PairOverride({fee: 0, period: 0, scaledOfferFactor: 100_00_00})
+            pairOverride: UniV3OracleImpl.PairOverride({fee: 0, period: 0})
         });
         pairOverrides[1] = UniV3OracleImpl.SetPairOverrideParams({
             quotePair: QuotePair({base: USDC, quote: ETH_ADDRESS}),
-            pairOverride: UniV3OracleImpl.PairOverride({fee: 30_00, period: 10 minutes, scaledOfferFactor: 0})
+            pairOverride: UniV3OracleImpl.PairOverride({fee: 30_00, period: 10 minutes})
         });
         uint256 length = pairOverrides.length;
 
@@ -326,11 +289,11 @@ contract UniV3OracleImplTest is BaseTest {
 
         pairOverrides[0] = UniV3OracleImpl.SetPairOverrideParams({
             quotePair: wethETH,
-            pairOverride: UniV3OracleImpl.PairOverride({fee: 0, period: 0, scaledOfferFactor: 100_00_00})
+            pairOverride: UniV3OracleImpl.PairOverride({fee: 0, period: 0})
         });
         pairOverrides[1] = UniV3OracleImpl.SetPairOverrideParams({
             quotePair: usdcETH,
-            pairOverride: UniV3OracleImpl.PairOverride({fee: 30_00, period: 10 minutes, scaledOfferFactor: 0})
+            pairOverride: UniV3OracleImpl.PairOverride({fee: 30_00, period: 10 minutes})
         });
 
         vm.prank(initParams.owner);
@@ -360,11 +323,11 @@ contract UniV3OracleImplTest is BaseTest {
         oracle.getQuoteAmounts(quoteParams);
     }
 
-    function testFork_getQuoteAmounts_ifConvertedPairEqual_returnsScaledOffer() public unpaused {
+    function testFork_getQuoteAmounts_ifConvertedPairEqual_returnsBaseAmount() public unpaused {
         delete quoteParams[1]; // delete usdcETH
 
         uint256[] memory quoteAmounts = oracle.getQuoteAmounts(quoteParams);
-        assertEq(quoteAmounts[0], 999 * (10 ** 15));
+        assertEq(quoteAmounts[0], quoteParams[0].baseAmount);
     }
 
     function testFork_revertsWhen_UniPoolDoesNotExist_getQuoteAmounts() public unpaused {
@@ -378,8 +341,7 @@ contract UniV3OracleImplTest is BaseTest {
                 quotePair: usdcETH,
                 pairOverride: UniV3OracleImpl.PairOverride({
                     fee: 10,
-                    period: 0, // no override
-                    scaledOfferFactor: 0 // no override
+                    period: 0 // no override
                 })
             })
         );
@@ -485,44 +447,6 @@ contract UniV3OracleImplTest is BaseTest {
     }
 
     /// -----------------------------------------------------------------------
-    /// tests - fuzz - setDefaultScaledOfferFactor
-    /// -----------------------------------------------------------------------
-
-    function testForkFuzz_revertWhen_callerNotOwner_setDefaultScaledOfferFactor(
-        address notOwner_,
-        uint32 newDefaultScaledOfferFactor_
-    ) public {
-        UniV3OracleImpl.InitParams memory initParams = _initParams();
-
-        vm.assume(notOwner_ != initParams.owner);
-        vm.prank(notOwner_);
-        vm.expectRevert(Unauthorized.selector);
-        oracle.setDefaultScaledOfferFactor(newDefaultScaledOfferFactor_);
-    }
-
-    function testForkFuzz_setDefaultScaledOfferFactor_setsDefaultScaledOfferFactor(uint32 newDefaultScaledOfferFactor_)
-        public
-        callerOwner
-    {
-        UniV3OracleImpl.InitParams memory initParams = _initParams();
-
-        vm.prank(initParams.owner);
-        oracle.setDefaultScaledOfferFactor(newDefaultScaledOfferFactor_);
-        assertEq(oracle.defaultScaledOfferFactor(), newDefaultScaledOfferFactor_);
-    }
-
-    function testForkFuzz_setDefaultScaledOfferFactor_emitsSetDefaultScaledOfferFactor(
-        uint32 newDefaultScaledOfferFactor_
-    ) public callerOwner {
-        UniV3OracleImpl.InitParams memory initParams = _initParams();
-
-        vm.prank(initParams.owner);
-        vm.expectEmit();
-        emit SetDefaultScaledOfferFactor(newDefaultScaledOfferFactor_);
-        oracle.setDefaultScaledOfferFactor(newDefaultScaledOfferFactor_);
-    }
-
-    /// -----------------------------------------------------------------------
     /// tests - fuzz - setPairOverrides
     /// -----------------------------------------------------------------------
 
@@ -585,6 +509,5 @@ contract UniV3OracleImplTest is BaseTest {
     function assertEq(UniV3OracleImpl.PairOverride memory a, UniV3OracleImpl.PairOverride memory b) internal {
         assertEq(a.fee, b.fee);
         assertEq(a.period, b.period);
-        assertEq(a.scaledOfferFactor, b.scaledOfferFactor);
     }
 }

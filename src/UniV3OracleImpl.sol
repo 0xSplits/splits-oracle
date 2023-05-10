@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
+import {ConvertedQuotePair, QuotePair, QuoteParams, SortedConvertedQuotePair} from "splits-utils/LibQuotes.sol";
 import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {OracleLibrary} from "v3-periphery/libraries/OracleLibrary.sol";
 import {TokenUtils} from "splits-utils/TokenUtils.sol";
 
 import {OracleImpl} from "./OracleImpl.sol";
-import {QuotePair, ConvertedQuotePair, SortedConvertedQuotePair} from "./utils/QuotePair.sol";
 
 /// @title UniV3 Oracle Implementation
 /// @author 0xSplits
@@ -33,7 +33,6 @@ contract UniV3OracleImpl is OracleImpl {
         bool paused;
         uint24 defaultFee;
         uint32 defaultPeriod;
-        uint32 defaultScaledOfferFactor;
         SetPairOverrideParams[] pairOverrides;
     }
 
@@ -45,7 +44,6 @@ contract UniV3OracleImpl is OracleImpl {
     struct PairOverride {
         uint24 fee;
         uint32 period;
-        uint32 scaledOfferFactor;
     }
 
     /// -----------------------------------------------------------------------
@@ -54,7 +52,6 @@ contract UniV3OracleImpl is OracleImpl {
 
     event SetDefaultFee(uint24 defaultFee);
     event SetDefaultPeriod(uint32 defaultPeriod);
-    event SetDefaultScaledOfferFactor(uint32 defaultScaledOfferFactor);
     event SetPairOverrides(SetPairOverrideParams[] params);
 
     /// -----------------------------------------------------------------------
@@ -65,9 +62,6 @@ contract UniV3OracleImpl is OracleImpl {
     /// storage - constants & immutables
     /// -----------------------------------------------------------------------
 
-    /// @dev percentages measured in hundredths of basis points
-    uint32 internal constant PERCENTAGE_SCALE = 100_00_00; // = 100%
-
     address public immutable uniV3OracleFactory;
     IUniswapV3Factory public immutable uniswapV3Factory;
     address public immutable weth9;
@@ -76,7 +70,7 @@ contract UniV3OracleImpl is OracleImpl {
     /// storage - mutables
     /// -----------------------------------------------------------------------
 
-    /// slot 0 - 0 byte free
+    /// slot 0 - 4 byte free
 
     /// OwnableImpl storage
     /// address internal $owner;
@@ -97,12 +91,6 @@ contract UniV3OracleImpl is OracleImpl {
     /// @dev unless overriden, getQuoteAmounts will revert if zero
     /// 4 bytes
     uint32 internal $defaultPeriod;
-
-    /// default price scaling factor
-    /// @dev PERCENTAGE_SCALE = 1e6 = 100_00_00 = 100% = no discount or premium
-    /// 99_00_00 = 99% = 1% discount to oracle; 101_00_00 = 101% = 1% premium to oracle
-    /// 4 bytes
-    uint32 internal $defaultScaledOfferFactor;
 
     /// slot 1 - 0 bytes free
 
@@ -128,7 +116,6 @@ contract UniV3OracleImpl is OracleImpl {
         $paused = params_.paused;
         $defaultFee = params_.defaultFee;
         $defaultPeriod = params_.defaultPeriod;
-        $defaultScaledOfferFactor = params_.defaultScaledOfferFactor;
 
         _setPairOverrides(params_.pairOverrides);
     }
@@ -157,12 +144,6 @@ contract UniV3OracleImpl is OracleImpl {
         emit SetDefaultPeriod(defaultPeriod_);
     }
 
-    /// set defaultScaledOfferFactor
-    function setDefaultScaledOfferFactor(uint32 defaultScaledOfferFactor_) external onlyOwner {
-        $defaultScaledOfferFactor = defaultScaledOfferFactor_;
-        emit SetDefaultScaledOfferFactor(defaultScaledOfferFactor_);
-    }
-
     /// set pair overrides
     function setPairOverrides(SetPairOverrideParams[] calldata params_) external onlyOwner {
         _setPairOverrides(params_);
@@ -179,10 +160,6 @@ contract UniV3OracleImpl is OracleImpl {
 
     function defaultPeriod() external view returns (uint32) {
         return $defaultPeriod;
-    }
-
-    function defaultScaledOfferFactor() external view returns (uint32) {
-        return $defaultScaledOfferFactor;
     }
 
     /// get pair override for an array of quote pairs
@@ -236,7 +213,7 @@ contract UniV3OracleImpl is OracleImpl {
 
     /// set pair override
     function _setPairOverride(SetPairOverrideParams calldata params_) internal {
-        SortedConvertedQuotePair memory scqp = _convertAndSortQuotePair(params_.quotePair);
+        SortedConvertedQuotePair memory scqp = _convertAndSort(params_.quotePair);
         $_pairOverrides[scqp.cToken0][scqp.cToken1] = params_.pairOverride;
     }
 
@@ -247,18 +224,13 @@ contract UniV3OracleImpl is OracleImpl {
     /// get quote amount for a trade
     function _getQuoteAmount(QuoteParams calldata quoteParams_) internal view returns (uint256) {
         ConvertedQuotePair memory cqp = quoteParams_.quotePair._convert(_convertToken);
-        SortedConvertedQuotePair memory scqp = cqp._sort();
-
-        PairOverride memory po = _getPairOverride(scqp);
-        if (po.scaledOfferFactor == 0) {
-            po.scaledOfferFactor = $defaultScaledOfferFactor;
-        }
 
         // skip oracle if converted tokens are equal
         if (cqp.cBase == cqp.cQuote) {
-            return quoteParams_.baseAmount * po.scaledOfferFactor / PERCENTAGE_SCALE;
+            return quoteParams_.baseAmount;
         }
 
+        PairOverride memory po = _getPairOverride(cqp._sort());
         if (po.fee == 0) {
             po.fee = $defaultFee;
         }
@@ -266,7 +238,7 @@ contract UniV3OracleImpl is OracleImpl {
             po.period = $defaultPeriod;
         }
 
-        address pool = uniswapV3Factory.getPool(scqp.cToken0, scqp.cToken1, po.fee);
+        address pool = uniswapV3Factory.getPool(cqp.cBase, cqp.cQuote, po.fee);
         if (pool == address(0)) {
             revert Pool_DoesNotExist();
         }
@@ -274,19 +246,17 @@ contract UniV3OracleImpl is OracleImpl {
         // reverts if period is zero or > oldest observation
         (int24 arithmeticMeanTick,) = OracleLibrary.consult({pool: pool, secondsAgo: po.period});
 
-        uint256 unscaledAmountToBeneficiary = OracleLibrary.getQuoteAtTick({
+        return OracleLibrary.getQuoteAtTick({
             tick: arithmeticMeanTick + 1, // adjust for OracleLibrary always rounding down
             baseAmount: quoteParams_.baseAmount,
             baseToken: cqp.cBase,
             quoteToken: cqp.cQuote
         });
-
-        return unscaledAmountToBeneficiary * po.scaledOfferFactor / PERCENTAGE_SCALE;
     }
 
     /// get pair override
     function _getPairOverride(QuotePair calldata quotePair_) internal view returns (PairOverride memory) {
-        return _getPairOverride(_convertAndSortQuotePair(quotePair_));
+        return _getPairOverride(_convertAndSort(quotePair_));
     }
 
     /// get pair overrides
@@ -295,12 +265,12 @@ contract UniV3OracleImpl is OracleImpl {
     }
 
     /// convert & sort tokens into canonical order
-    function _convertAndSortQuotePair(QuotePair calldata quotePair_)
+    function _convertAndSort(QuotePair calldata quotePair_)
         internal
         view
         returns (SortedConvertedQuotePair memory)
     {
-        return quotePair_._convert(_convertToken)._sort();
+        return quotePair_._convertAndSort(_convertToken);
     }
 
     /// convert eth (0x0) to weth
