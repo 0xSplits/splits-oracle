@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {IUniswapV3Factory} from "v3-core/interfaces/IUniswapV3Factory.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 
 import {IOracle} from "./interfaces/IOracle.sol";
@@ -18,9 +17,8 @@ contract UniV3OracleFactory is IOracleFactory {
 
     UniV3OracleImpl public immutable uniV3OracleImpl;
 
-    constructor(IUniswapV3Factory uniswapV3Factory_, address weth9_) {
+    constructor(address weth9_) {
         uniV3OracleImpl = new UniV3OracleImpl({
-            uniswapV3Factory_: uniswapV3Factory_,
             weth9_: weth9_
         });
     }

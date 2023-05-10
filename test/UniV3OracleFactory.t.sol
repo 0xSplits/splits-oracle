@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "splits-tests/Base.t.sol";
 
-import {IUniswapV3Factory, UniV3OracleFactory} from "../src/UniV3OracleFactory.sol";
+import {UniV3OracleFactory} from "../src/UniV3OracleFactory.sol";
 import {UniV3OracleImpl} from "../src/UniV3OracleImpl.sol";
 
 // TODO: add fuzz tests
@@ -14,18 +14,26 @@ contract UniV3OracleFactoryTest is BaseTest {
     UniV3OracleFactory oracleFactory;
     UniV3OracleImpl oracleImpl;
 
-    UniV3OracleImpl.SetPairOverrideParams[] pairOverrides;
+    UniV3OracleImpl.SetPairDetailParams[] pairDetails;
 
     function setUp() public virtual override {
         super.setUp();
 
         oracleFactory = new UniV3OracleFactory({
-            uniswapV3Factory_: IUniswapV3Factory(UNISWAP_V3_FACTORY),
             weth9_: WETH9
         });
         oracleImpl = oracleFactory.uniV3OracleImpl();
 
         // TODO: add pair override?
+    }
+
+    function _initOracleParams() internal view returns (UniV3OracleImpl.InitParams memory) {
+        return UniV3OracleImpl.InitParams({
+            owner: users.alice,
+            paused: false,
+            defaultPeriod: 30 minutes,
+            pairDetails: pairDetails
+        });
     }
 
     /// -----------------------------------------------------------------------
@@ -78,21 +86,5 @@ contract UniV3OracleFactoryTest is BaseTest {
         _expectEmit();
         emit CreateUniV3Oracle(expectedOracle, params);
         oracleFactory.createOracle(abi.encode(params));
-    }
-
-    /// -----------------------------------------------------------------------
-    /// internal
-    /// -----------------------------------------------------------------------
-
-    /// @dev can't be init'd in setUp & saved to storage bc of nested dynamic array solc error
-    /// UnimplementedFeatureError: Copying of type struct UniV3OracleImpl.SetPairOverrideParams memory[] memory to storage not yet supported.
-    function _initOracleParams() internal view returns (UniV3OracleImpl.InitParams memory) {
-        return UniV3OracleImpl.InitParams({
-            owner: users.alice,
-            paused: false,
-            defaultFee: 30_00, // = 0.3%
-            defaultPeriod: 30 minutes,
-            pairOverrides: pairOverrides
-        });
     }
 }
