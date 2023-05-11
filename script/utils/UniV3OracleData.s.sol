@@ -33,7 +33,7 @@ contract UniV3OracleDataScript is Script {
 
     function setUp() public {}
 
-    function run() public {
+    function run() public view {
         IUniswapV3Factory uniswapV3Factory = IUniswapV3Factory(0x1F98431c8aD98523631AE4a59f267346ea31F984);
         for (uint256 i = 0; i < tokens.length; i++) {
             for (uint256 j = i; j < tokens.length; j++) {
