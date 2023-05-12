@@ -171,7 +171,6 @@ contract Initialized_UniV3OracleImplTest is Initialized_PausableImplTest, Initia
         assertEq($oracle.getPairDetails(quotePairs), nextPairDetails);
     }
 
-    // TODO: upgrade to test array; need to prune converted duplicates or limit size to 2 or something
     function testForkFuzz_setPairDetails_setsPairDetails(UniV3OracleImpl.SetPairDetailParams memory nextSetPairDetails_)
         public
         callerOwner
