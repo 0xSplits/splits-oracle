@@ -9,7 +9,7 @@ import {UniV3OracleImpl} from "./UniV3OracleImpl.sol";
 
 /// @title UniV3 Oracle Factory
 /// @author 0xSplits
-/// @notice Factory for creating uniV3 oracles
+/// @notice Factory for creating UniV3 Oracles
 contract UniV3OracleFactory is IOracleFactory {
     using LibClone for address;
 

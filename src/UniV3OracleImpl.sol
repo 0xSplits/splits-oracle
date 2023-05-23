@@ -13,6 +13,7 @@ import {PairDetails} from "./libraries/PairDetails.sol";
 /// @title UniV3 Oracle Implementation
 /// @author 0xSplits
 /// @notice A clone-implementation of an oracle using UniswapV3 TWAP
+/// @dev This contract uses token = address(0) to refer to ETH.
 contract UniV3OracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
     /// libraries
@@ -87,7 +88,7 @@ contract UniV3OracleImpl is OracleImpl {
 
     /// slot 1 - 0 bytes free
 
-    /// overrides for specific quote pairs
+    /// details for specific quote pairs
     /// 32 bytes
     mapping(address => mapping(address => PairDetail)) internal $_pairDetails;
 
@@ -129,7 +130,7 @@ contract UniV3OracleImpl is OracleImpl {
         emit SetDefaultPeriod(defaultPeriod_);
     }
 
-    /// set pair overrides
+    /// set pair details
     function setPairDetails(SetPairDetailParams[] calldata params_) external onlyOwner {
         _setPairDetails(params_);
         emit SetPairDetails(params_);
@@ -143,7 +144,7 @@ contract UniV3OracleImpl is OracleImpl {
         return $defaultPeriod;
     }
 
-    /// get pair override for an array of quote pairs
+    /// get pair details for an array of quote pairs
     function getPairDetails(QuotePair[] calldata quotePairs_) external view returns (PairDetail[] memory pairDetails) {
         uint256 length = quotePairs_.length;
         pairDetails = new PairDetail[](length);
@@ -177,7 +178,7 @@ contract UniV3OracleImpl is OracleImpl {
     /// functions - private & internal
     /// -----------------------------------------------------------------------
 
-    /// set pair overrides
+    /// set pair details
     function _setPairDetails(SetPairDetailParams[] calldata params_) internal {
         $_pairDetails._set(_convert, params_);
     }
@@ -186,7 +187,7 @@ contract UniV3OracleImpl is OracleImpl {
     /// functions - private & internal - views
     /// -----------------------------------------------------------------------
 
-    /// get quote amount for a trade
+    /// get amount for a quote
     function _getQuoteAmount(QuoteParams calldata quoteParams_) internal view returns (uint256) {
         ConvertedQuotePair memory cqp = quoteParams_.quotePair._convert(_convert);
 
@@ -214,7 +215,7 @@ contract UniV3OracleImpl is OracleImpl {
         });
     }
 
-    /// convert eth (0x0) to weth
+    /// convert ETH (0x0) to WETH
     function _convert(address token_) internal view returns (address) {
         return token_._isETH() ? weth9 : token_;
     }
