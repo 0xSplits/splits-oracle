@@ -16,7 +16,7 @@ Many onchain value flows require fair pricing for token pairs.
 
 ### How does it determine fair pricing?
 
-`UniV3OracleImpl` uses Uniswap V3 TWAP oracle.
+`UniV3OracleImpl` uses Uniswap V3's TWAP oracle. The owner must specify the reference pool & TWAP period per pair.
 
 ### How is it governed?
 
