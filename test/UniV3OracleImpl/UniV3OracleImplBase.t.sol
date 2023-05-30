@@ -219,12 +219,12 @@ abstract contract Uninitialized_UniV3OracleImplBase is Uninitialized_PausableImp
     modifier callerNotFactory(address notFactory_) {
         vm.assume(notFactory_ != address($oracleFactory));
         $notFactory = notFactory_;
-        changePrank(notFactory_);
+        vm.startPrank(notFactory_);
         _;
     }
 
     modifier callerFactory() {
-        changePrank(address($oracleFactory));
+        vm.startPrank(address($oracleFactory));
         _;
     }
 

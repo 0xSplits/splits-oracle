@@ -43,9 +43,13 @@ contract Unintialized_UniV3OracleImplTest is Uninitialized_PausableImplTest, Uni
     /// initializer
     /// -----------------------------------------------------------------------
 
-    function testFork_revertWhen_callerNotFactory_initializer() public callerNotFactory($notFactory) {
+    function _testFork_revertWhen_callerNotFactory_initializer() internal {
         vm.expectRevert(Unauthorized.selector);
         $oracle.initializer(_initParams());
+    }
+
+    function testFork_revertWhen_callerNotFactory_initializer() public callerNotFactory($notFactory) {
+        _testFork_revertWhen_callerNotFactory_initializer();
     }
 
     function testForkFuzz_revertWhen_callerNotFactory_initializer(
@@ -54,12 +58,16 @@ contract Unintialized_UniV3OracleImplTest is Uninitialized_PausableImplTest, Uni
     ) public callerNotFactory(caller_) {
         _setUpUniV3OracleParams(params_);
 
-        testFork_revertWhen_callerNotFactory_initializer();
+        _testFork_revertWhen_callerNotFactory_initializer();
+    }
+
+    function _testFork_initializer_setsDefaultPeriod() internal {
+        $oracle.initializer(_initParams());
+        assertEq($oracle.defaultPeriod(), $defaultPeriod);
     }
 
     function testFork_initializer_setsDefaultPeriod() public callerFactory {
-        $oracle.initializer(_initParams());
-        assertEq($oracle.defaultPeriod(), $defaultPeriod);
+        _testFork_initializer_setsDefaultPeriod();
     }
 
     function testForkFuzz_initializer_setsDefaultPeriod(UniV3OracleImpl.InitParams calldata params_)
@@ -67,10 +75,11 @@ contract Unintialized_UniV3OracleImplTest is Uninitialized_PausableImplTest, Uni
         callerFactory
     {
         _setUpUniV3OracleParams(params_);
-        testFork_initializer_setsDefaultPeriod();
+
+        _testFork_initializer_setsDefaultPeriod();
     }
 
-    function testFork_initializer_setsPairDetails() public callerFactory {
+    function _testFork_initializer_setsPairDetails() internal {
         UniV3OracleImpl.InitParams memory initParams = _initParams();
         $oracle.initializer(initParams);
 
@@ -84,13 +93,19 @@ contract Unintialized_UniV3OracleImplTest is Uninitialized_PausableImplTest, Uni
         assertEq($oracle.getPairDetails(initQuotePairs), initPairDetails);
     }
 
-    function testForkFuzz_initializer_setsPairDetails(UniV3OracleImpl.InitParams calldata params_)
-        public
-        callerFactory
-    {
-        _setUpUniV3OracleParams(params_);
-        testFork_initializer_setsPairDetails();
+    function testFork_initializer_setsPairDetails() public callerFactory {
+        _testFork_initializer_setsPairDetails();
     }
+
+    // remove converted, sorted duplicate pairs in params_
+    /* function testForkFuzz_initializer_setsPairDetails(UniV3OracleImpl.InitParams calldata params_) */
+    /*     public */
+    /*     callerFactory */
+    /* { */
+    /*     _setUpUniV3OracleParams(params_); */
+
+    /*     _testFork_initializer_setsPairDetails(); */
+    /* } */
 }
 
 contract Initialized_UniV3OracleImplTest is Initialized_PausableImplTest, Initialized_UniV3OracleImplBase {
@@ -235,7 +250,7 @@ contract Paused_Initialized_UniV3OracleImplTest is
         public
         paused
     {
-        changePrank(caller_);
+        vm.startPrank(caller_);
         vm.expectRevert(Paused.selector);
         $oracle.getQuoteAmounts(quoteParams_);
     }
