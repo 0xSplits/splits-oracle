@@ -1,14 +1,18 @@
 # splits-oracle
 
+[Docs](https://docs.0xsplits.xyz/core/oracle)
+
 ## What
 
-Oracle provides an interface (IOracle) allowing for a customization layer on top of other onchain oracles.
+Oracle provides a generic interface (IOracle) allowing for modular integrations of other onchain oracles (see [Swapper](https://github.com/0xSplits/splits-swapper) for an example integration)
 
-`UniV3OracleImpl` is an implementation using Uniswap v3's TWAP oracle.
+`UniV3OracleImpl` - provides per-pair customization layer (pool, period) on top of Uniswap v3's TWAP oracle
+
+`ChainlinkOracleImpl` - coming soon
 
 ## Why
 
-Many onchain value flows require fair pricing for token pairs.
+Many onchain value flows require fair pricing for token pairs
 
 ## How
 
@@ -20,7 +24,7 @@ Many onchain value flows require fair pricing for token pairs.
 
 ### How is it governed?
 
-Please be aware, an Oracle's owner has _SIGNIFICANT CONTROL_ (depending on the implementation) of the deployment. It may, at any time for any reason, change the quote pair uniswap pools & TWAP periods. In situations where flows ultimately belong to or benefit more than a single person & immutability is a nonstarter, we strongly recommend using multisigs or DAOs for governance.
+Please be aware, an Oracle's owner has _SIGNIFICANT CONTROL_ (depending on the implementation) of the deployment. It may, at any time for any reason, change the quote pair uniswap pools & TWAP periods. In situations where flows ultimately belong to or benefit more than a single person & immutability is a nonstarter, we strongly recommend using a multisig or DAO for governance.
 
 ## Lint
 
