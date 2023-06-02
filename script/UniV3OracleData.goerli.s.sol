@@ -11,16 +11,19 @@ import "forge-std/Script.sol";
 import "forge-std/console.sol";
 
 contract UniV3OracleDataScript is Script {
-    address[3] tokens = [
-        0x6B175474E89094C44Da98b954EedeAC495271d0F, // DAI
-        0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, // USDC
-        0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2 // WETH
+    // goerli
+    address[4] tokens = [
+        0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60, // DAI
+        0x07865c6E87B9F70255377e024ace6630C1Eaa37F, // USDC
+        0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6, // WETH
+        0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 // UNI
     ];
 
-    string[3] tokensStr = [
+    string[4] tokensStr = [
         "DAI", // DAI
         "USDC", // USDC
-        "WETH" // WETH
+        "WETH", // WETH
+        "UNI" // UNI
     ];
 
     uint24[4] fees = [uint24(1_00), uint24(5_00), uint24(30_00), uint24(100_00)];
@@ -30,8 +33,6 @@ contract UniV3OracleDataScript is Script {
     uint32[5] periods = [uint32(1 minutes), uint32(5 minutes), uint32(10 minutes), uint32(30 minutes), uint32(1 hours)];
 
     uint128 constant baseAmount = 1e18;
-
-    function setUp() public {}
 
     function run() public view {
         IUniswapV3Factory uniswapV3Factory = IUniswapV3Factory(0x1F98431c8aD98523631AE4a59f267346ea31F984);
@@ -67,28 +68,31 @@ contract UniV3OracleDataScript is Script {
 
                     console.log("twaps:");
                     for (uint256 a = 0; a < periods.length; a++) {
-                        uint32 period = periods[a];
+                        /* uint32 period = periods[a]; */
 
                         uint32[] memory secondsAgo = new uint32[](2);
-                        secondsAgo[0] = period;
+                        secondsAgo[0] = periods[a];
                         secondsAgo[1] = 0;
 
                         // consult reverts if not enough observations
                         try IUniswapV3Pool(pool).observe(secondsAgo) {
-                            (int24 arithmeticMeanTick,) = OracleLibrary.consult({pool: pool, secondsAgo: period});
+                            (int24 arithmeticMeanTick, uint128 harmonicMeanLiquidity) =
+                                OracleLibrary.consult({pool: pool, secondsAgo: periods[a]});
                             quoteAmount = OracleLibrary.getQuoteAtTick({
                                 tick: arithmeticMeanTick,
                                 baseAmount: baseAmount,
                                 baseToken: tokens[i],
                                 quoteToken: tokens[j]
                             });
-                            console.log("%s second twap", period);
+                            console.log("%s second twap", periods[a]);
+                            console.log("   liquidity:");
+                            console.logUint(harmonicMeanLiquidity);
                             console.log("   tick:");
                             console.logInt(arithmeticMeanTick);
                             console.log("   receive %s of %s for", quoteAmount, tokensStr[j]);
                             console.log("    %s of %s", baseAmount, tokensStr[i]);
                         } catch {
-                            console.log("- %s second twap: not enough observations", period);
+                            console.log("- %s second twap: not enough observations", periods[a]);
                         }
                     }
                 }
