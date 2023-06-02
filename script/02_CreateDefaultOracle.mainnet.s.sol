@@ -26,7 +26,7 @@ contract CreateDefaultOracleMainnetScript is CreateDefaultOracleBaseScript {
 
     function setUp() public {
         $uniswapV3Factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
-        $uniV3OracleFactory = address(0);
+        $uniV3OracleFactory = address(0x498f316fEB85a250fdC64B859a130515491EC888);
 
         $owner = address(0x0);
         $paused = false;
