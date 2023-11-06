@@ -55,7 +55,7 @@ abstract contract Uninitialized_ChainlinkOracleImplBase is Uninitialized_Pausabl
     address constant USDC_ETH_AGG = 0x986b5E1e1755e3C2440e960477f25201B0a8bbD4;
     address constant DAI_ETH_AGG = 0x773616E4d11A78F511299002da57A0a94577F1f4;
     address constant ETH_USD_AGG = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
-    address constant USDT_USD_FEED = 0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6;
+    address constant USDT_USD_AGG = 0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6;
 
     address $testing_agg;
 
@@ -96,7 +96,7 @@ abstract contract Uninitialized_ChainlinkOracleImplBase is Uninitialized_Pausabl
         });
 
         ChainlinkOracleImpl.Feed memory USDT_USD_FEED = ChainlinkOracleImpl.Feed({
-            feed: AggregatorV3Interface(USDT_USD_FEED),
+            feed: AggregatorV3Interface(USDT_USD_AGG),
             staleAfter: 86400,
             decimals: 8,
             mul: false
