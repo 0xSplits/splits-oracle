@@ -5,7 +5,7 @@ import {ChainlinkOracleImpl} from "./ChainlinkOracleImpl.sol";
 import {AggregatorV3Interface} from "chainlink/interfaces/AggregatorV3Interface.sol";
 import {QuoteParams} from "splits-utils/LibQuotes.sol";
 
-/// @title Chainlink Oracle Implementation
+/// @title Chainlink L2 Oracle Implementation
 /// @author 0xSplits
 /// @notice A clone-implementation of an oracle using Chainlink
 /// @dev This contract uses token = address(0) to refer to ETH.
@@ -29,30 +29,14 @@ contract ChainlinkOracleL2Impl is ChainlinkOracleImpl {
     uint256 constant GRACE_PERIOD_TIME = 1 hours;
 
     /// -----------------------------------------------------------------------
-    /// storage - mutables
-    /// -----------------------------------------------------------------------
-
-    /// slot 0 - 7 byte free
-
-    /// OwnableImpl storage
-    /// address internal $owner;
-    /// 20 bytes
-
-    /// PausableImpl storage
-    /// bool internal $paused;
-    /// 1 byte
-
-    /// slot 1 - 0 bytes free
-
-    /// slot 2 - 0 bytes free
-
-    /// details for specific quote pairs
-    /// 32 bytes
-
-    /// -----------------------------------------------------------------------
     /// constructor & initializer
     /// -----------------------------------------------------------------------
 
+    /**
+     * @notice constructor
+     * @param weth9_ address of WETH9 contract
+     * @param sequencerFeed_ address of sequencer feed
+     */
     constructor(address weth9_, AggregatorV3Interface sequencerFeed_) ChainlinkOracleImpl(weth9_) {
         sequencerFeed = sequencerFeed_;
     }
@@ -62,14 +46,10 @@ contract ChainlinkOracleL2Impl is ChainlinkOracleImpl {
     /// -----------------------------------------------------------------------
 
     /// -----------------------------------------------------------------------
-    /// functions - public & external
-    /// -----------------------------------------------------------------------
-
-    /// -----------------------------------------------------------------------
     /// functions - public & external - view
     /// -----------------------------------------------------------------------
 
-    /// get amounts for an array of quotes
+    /// @inheritdoc ChainlinkOracleImpl
     function getQuoteAmounts(QuoteParams[] calldata quoteParams_)
         public
         view
@@ -85,7 +65,6 @@ contract ChainlinkOracleL2Impl is ChainlinkOracleImpl {
     /// functions - private & internal - views
     /// -----------------------------------------------------------------------
 
-    /// check sequencer feed
     function _checkSequencerFeed() private view {
         (
             /*uint80 roundID*/

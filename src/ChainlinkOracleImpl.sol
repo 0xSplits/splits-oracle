@@ -84,33 +84,26 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// storage - mutables
     /// -----------------------------------------------------------------------
 
-    /// slot 0 - 7 byte free
-
-    /// OwnableImpl storage
-    /// address internal $owner;
-    /// 20 bytes
-
-    /// PausableImpl storage
-    /// bool internal $paused;
-    /// 1 byte
-
-    /// slot 1 - 0 bytes free
-
-    /// slot 2 - 0 bytes free
-
-    /// details for specific quote pairs
-    /// 32 bytes
+    /// @notice The pair details
     mapping(address => mapping(address => PairDetail)) internal $_pairDetails;
 
     /// -----------------------------------------------------------------------
     /// constructor & initializer
     /// -----------------------------------------------------------------------
 
+    /**
+     * @notice constructor
+     * @param weth9_ The WETH9 contract address
+     */
     constructor(address weth9_) {
         weth9 = weth9_;
         chainlinkOracleFactory = msg.sender;
     }
 
+    /**
+     * @notice Initialize the contract
+     * @param params_ The init params
+     */
     function initializer(InitParams calldata params_) external {
         // only chainlinkOracleFactory may call `initializer`
         if (msg.sender != chainlinkOracleFactory) revert Unauthorized();
@@ -130,7 +123,10 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// functions - public & external - onlyOwner
     /// -----------------------------------------------------------------------
 
-    /// set pair details
+    /**
+     * @notice Set pair details
+     * @param params_ The set pair details params
+     */
     function setPairDetails(SetPairDetailParams[] calldata params_) external onlyOwner {
         _setPairDetails(params_);
         emit SetPairDetails(params_);
@@ -140,7 +136,11 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// functions - public & external - view
     /// -----------------------------------------------------------------------
 
-    /// get pair details for an array of quote pairs
+    /**
+     * @notice Get pair details
+     * @param quotePairs_ The quote pairs
+     * @return pairDetails The pair details
+     */
     function getPairDetails(QuotePair[] calldata quotePairs_) external view returns (PairDetail[] memory pairDetails) {
         uint256 length = quotePairs_.length;
         pairDetails = new PairDetail[](length);
@@ -152,7 +152,11 @@ contract ChainlinkOracleImpl is OracleImpl {
         }
     }
 
-    /// get amounts for an array of quotes
+    /**
+     * @notice Get quote amounts
+     * @param quoteParams_ The quote params
+     * @return quoteAmounts The quote amounts
+     */
     function getQuoteAmounts(QuoteParams[] calldata quoteParams_)
         public
         view
@@ -174,7 +178,6 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// functions - private & internal
     /// -----------------------------------------------------------------------
 
-    /// set pair details
     function _setPairDetails(SetPairDetailParams[] calldata params_) internal {
         $_pairDetails._set(_convert, params_);
     }
@@ -183,7 +186,6 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// functions - private & internal - views
     /// -----------------------------------------------------------------------
 
-    /// get amount for a quote
     function _getQuoteAmount(QuoteParams calldata quoteParams_) internal view returns (uint256) {
         ConvertedQuotePair memory cqp = quoteParams_.quotePair._convert(_convert);
 
@@ -238,7 +240,6 @@ contract ChainlinkOracleImpl is OracleImpl {
         }
     }
 
-    /// adjust quoteAmount_ based on decimals of base & quote
     function _adjustQuoteDecimals(uint256 quoteAmount_, QuoteParams calldata quoteParams_)
         internal
         view
