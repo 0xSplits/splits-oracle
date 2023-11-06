@@ -2,32 +2,33 @@
 pragma solidity ^0.8.17;
 
 import {LibClone} from "solady/utils/LibClone.sol";
-
 import {IOracle} from "./interfaces/IOracle.sol";
 import {IOracleFactory} from "./interfaces/IOracleFactory.sol";
+import {ChainlinkOracleL2Impl} from "./ChainlinkOracleL2Impl.sol";
 import {ChainlinkOracleImpl} from "./ChainlinkOracleImpl.sol";
+import {AggregatorV3Interface} from "chainlink/interfaces/AggregatorV3Interface.sol";
 
 /// @title Chainlink Oracle Factory
 /// @author 0xSplits
 /// @notice Factory for creating Chainlink Oracles
-contract ChainlinkOracleFactory is IOracleFactory {
+contract ChainlinkOracleL2Factory is IOracleFactory {
     using LibClone for address;
 
-    event CreateChainlinkOracle(ChainlinkOracleImpl indexed oracle, ChainlinkOracleImpl.InitParams params);
+    event CreateChainlinkOracle(ChainlinkOracleL2Impl indexed oracle, ChainlinkOracleL2Impl.InitParams params);
 
-    ChainlinkOracleImpl public immutable chainlinkOracleImpl;
+    ChainlinkOracleL2Impl public immutable chainlinkOracleImpl;
 
-    constructor(address weth9_) {
-        chainlinkOracleImpl = new ChainlinkOracleImpl(weth9_);
+    constructor(address weth9_, AggregatorV3Interface sequencerFeed_) {
+        chainlinkOracleImpl = new ChainlinkOracleL2Impl(weth9_, sequencerFeed_);
     }
 
     /// -----------------------------------------------------------------------
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    function createChainlinkOracle(ChainlinkOracleImpl.InitParams calldata params_)
+    function createChainlinkOracle(ChainlinkOracleL2Impl.InitParams calldata params_)
         external
-        returns (ChainlinkOracleImpl)
+        returns (ChainlinkOracleL2Impl)
     {
         return _createChainlinkOracle(params_);
     }
@@ -43,9 +44,9 @@ contract ChainlinkOracleFactory is IOracleFactory {
 
     function _createChainlinkOracle(ChainlinkOracleImpl.InitParams memory params_)
         internal
-        returns (ChainlinkOracleImpl oracle)
+        returns (ChainlinkOracleL2Impl oracle)
     {
-        oracle = ChainlinkOracleImpl(address(chainlinkOracleImpl).clone());
+        oracle = ChainlinkOracleL2Impl(address(chainlinkOracleImpl).clone());
         oracle.initializer(params_);
         emit CreateChainlinkOracle({oracle: oracle, params: params_});
     }

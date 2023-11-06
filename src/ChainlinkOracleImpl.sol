@@ -3,11 +3,10 @@ pragma solidity ^0.8.17;
 
 import {AddressUtils} from "splits-utils/AddressUtils.sol";
 import {AggregatorV3Interface} from "chainlink/interfaces/AggregatorV3Interface.sol";
-import {ConvertedQuotePair, QuotePair, QuoteParams, SortedConvertedQuotePair} from "splits-utils/LibQuotes.sol";
-import {OracleLibrary} from "v3-periphery/libraries/OracleLibrary.sol";
+import {ConvertedQuotePair, QuotePair, QuoteParams} from "splits-utils/LibQuotes.sol";
 import {QuotePair, QuoteParams} from "splits-utils/LibQuotes.sol";
 import {TokenUtils} from "splits-utils/TokenUtils.sol";
-
+import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {OracleImpl} from "./OracleImpl.sol";
 import {ChainlinkPairDetails} from "./libraries/ChainlinkPairDetails.sol";
 
@@ -23,6 +22,7 @@ contract ChainlinkOracleImpl is OracleImpl {
     using AddressUtils for address;
     using TokenUtils for address;
     using ChainlinkPairDetails for mapping(address => mapping(address => PairDetail));
+    using FixedPointMathLib for uint256;
 
     /// -----------------------------------------------------------------------
     /// errors
@@ -39,14 +39,7 @@ contract ChainlinkOracleImpl is OracleImpl {
     struct InitParams {
         address owner;
         bool paused;
-        uint32 defaultStaleAfter;
-        SetTokenOverrideParams[] tokenOverrides;
         SetPairDetailParams[] pairDetails;
-    }
-
-    struct SetTokenOverrideParams {
-        address token;
-        address tokenOverride;
     }
 
     struct SetPairDetailParams {
@@ -55,17 +48,25 @@ contract ChainlinkOracleImpl is OracleImpl {
     }
 
     struct PairDetail {
-        AggregatorV3Interface feed;
+        // encoded feed[]
+        bytes path;
         bool inverted;
+    }
+
+    struct Feed {
+        AggregatorV3Interface feed;
+        /// @dev staleAfter > 1 hours
         uint32 staleAfter;
+        /// @dev decimals should be same as feed.decimals()
+        uint8 decimals;
+        /// @dev mul should be true for the first feed in the path
+        bool mul;
     }
 
     /// -----------------------------------------------------------------------
     /// events
     /// -----------------------------------------------------------------------
 
-    event SetDefaultStaleAfter(uint32 defaultStaleAfter);
-    event SetTokenOverrides(SetTokenOverrideParams[] params);
     event SetPairDetails(SetPairDetailParams[] params);
 
     /// -----------------------------------------------------------------------
@@ -76,6 +77,7 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// storage - constants & immutables
     /// -----------------------------------------------------------------------
 
+    address public immutable weth9;
     address public immutable chainlinkOracleFactory;
 
     /// -----------------------------------------------------------------------
@@ -92,15 +94,7 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// bool internal $paused;
     /// 1 byte
 
-    /// default time until CL updates become stale
-    /// 4 bytes
-    uint32 internal $defaultStaleAfter;
-
     /// slot 1 - 0 bytes free
-
-    /// overrides for tokens
-    /// 32 bytes
-    mapping(address => address) internal $_tokenOverrides;
 
     /// slot 2 - 0 bytes free
 
@@ -112,7 +106,8 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// constructor & initializer
     /// -----------------------------------------------------------------------
 
-    constructor() {
+    constructor(address weth9_) {
+        weth9 = weth9_;
         chainlinkOracleFactory = msg.sender;
     }
 
@@ -122,10 +117,9 @@ contract ChainlinkOracleImpl is OracleImpl {
 
         __initOwnable(params_.owner);
         $paused = params_.paused;
-        $defaultStaleAfter = params_.defaultStaleAfter;
 
-        _setTokenOverrides(params_.tokenOverrides);
         _setPairDetails(params_.pairDetails);
+        emit SetPairDetails(params_.pairDetails);
     }
 
     /// -----------------------------------------------------------------------
@@ -133,24 +127,8 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
 
     /// -----------------------------------------------------------------------
-    /// functions - public & external
-    /// -----------------------------------------------------------------------
-
-    /// -----------------------------------------------------------------------
     /// functions - public & external - onlyOwner
     /// -----------------------------------------------------------------------
-
-    /// set defaultStaleAfter
-    function setDefaultStaleAfter(uint32 defaultStaleAfter_) external onlyOwner {
-        $defaultStaleAfter = defaultStaleAfter_;
-        emit SetDefaultStaleAfter(defaultStaleAfter_);
-    }
-
-    /// set token overrides
-    function setTokenOverrides(SetTokenOverrideParams[] calldata params_) external onlyOwner {
-        _setTokenOverrides(params_);
-        emit SetTokenOverrides(params_);
-    }
 
     /// set pair details
     function setPairDetails(SetPairDetailParams[] calldata params_) external onlyOwner {
@@ -161,22 +139,6 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
     /// functions - public & external - view
     /// -----------------------------------------------------------------------
-
-    function defaultStaleAfter() external view returns (uint32) {
-        return $defaultStaleAfter;
-    }
-
-    /// get token overrides for an array of tokens
-    function getTokenOverrides(address[] calldata tokens_) external view returns (address[] memory tokenOverrides) {
-        uint256 length = tokens_.length;
-        tokenOverrides = new address[](length);
-        for (uint256 i; i < length;) {
-            tokenOverrides[i] = $_tokenOverrides[tokens_[i]];
-            unchecked {
-                ++i;
-            }
-        }
-    }
 
     /// get pair details for an array of quote pairs
     function getPairDetails(QuotePair[] calldata quotePairs_) external view returns (PairDetail[] memory pairDetails) {
@@ -192,9 +154,9 @@ contract ChainlinkOracleImpl is OracleImpl {
 
     /// get amounts for an array of quotes
     function getQuoteAmounts(QuoteParams[] calldata quoteParams_)
-        external
+        public
         view
-        override
+        virtual
         pausable
         returns (uint256[] memory quoteAmounts)
     {
@@ -212,22 +174,6 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// functions - private & internal
     /// -----------------------------------------------------------------------
 
-    /// set token overrides
-    function _setTokenOverrides(SetTokenOverrideParams[] calldata params_) internal {
-        uint256 length = params_.length;
-        for (uint256 i; i < length;) {
-            _setTokenOverride(params_[i]);
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    /// set token override
-    function _setTokenOverride(SetTokenOverrideParams calldata params_) internal {
-        $_tokenOverrides[params_.token] = params_.tokenOverride;
-    }
-
     /// set pair details
     function _setPairDetails(SetPairDetailParams[] calldata params_) internal {
         $_pairDetails._set(_convert, params_);
@@ -241,68 +187,77 @@ contract ChainlinkOracleImpl is OracleImpl {
     function _getQuoteAmount(QuoteParams calldata quoteParams_) internal view returns (uint256) {
         ConvertedQuotePair memory cqp = quoteParams_.quotePair._convert(_convert);
 
-        // skip oracle if converted tokens are equal
         if (cqp.cBase == cqp.cQuote) {
             return quoteParams_.baseAmount;
         }
 
-        SortedConvertedQuotePair memory scqp = cqp._sort();
-        PairDetail memory pd = $_pairDetails._get(scqp);
-        if (address(pd.feed)._isEmpty()) {
+        PairDetail memory pd = $_pairDetails._get(cqp);
+        if (pd.path.length == 0) {
             revert InvalidPair_FeedNotSet(quoteParams_.quotePair);
         }
-        if (pd.staleAfter == 0) {
-            pd.staleAfter = $defaultStaleAfter;
-        }
 
+        Feed[] memory feeds = abi.decode(pd.path, (Feed[]));
+        uint256 feedLength = feeds.length;
+
+        uint256 finalAnswer = 1e18;
+        for (uint256 i; i < feedLength;) {
+            uint256 answer = _getFeedAnswer(feeds[i]);
+            if (feeds[i].mul) {
+                finalAnswer = finalAnswer.mulWadDown(answer);
+            } else {
+                finalAnswer = finalAnswer.divWadDown(answer);
+            }
+            unchecked {
+                ++i;
+            }
+        }
+        if (pd.inverted) finalAnswer = uint256(1e18).divWadDown(finalAnswer);
+        return _adjustQuoteDecimals(finalAnswer, quoteParams_);
+    }
+
+    function _getFeedAnswer(Feed memory feed_) internal view returns (uint256) {
         (
             , /* uint80 roundId, */
             int256 answer,
             , /* uint256 startedAt, */
             uint256 updatedAt,
             /* uint80 answeredInRound */
-        ) = pd.feed.latestRoundData();
+        ) = feed_.feed.latestRoundData();
 
-        if (updatedAt < block.timestamp - pd.staleAfter) {
-            revert StalePrice(pd.feed, updatedAt);
+        if (updatedAt < block.timestamp - feed_.staleAfter) {
+            revert StalePrice(feed_.feed, updatedAt);
         }
         if (answer < 0) {
-            revert NegativePrice(pd.feed, answer);
+            revert NegativePrice(feed_.feed, answer);
         }
 
-        uint256 quoteAmount;
-        uint8 answerDecimals = pd.feed.decimals();
-        bool pairInverted = (cqp.cBase != scqp.cToken0);
-        bool invertFeed = pd.inverted != pairInverted;
-        if (invertFeed) {
-            quoteAmount = uint256(quoteParams_.baseAmount) * 10 ** uint256(answerDecimals) / uint256(answer);
+        if (feed_.decimals <= 18) {
+            return uint256(answer) * 10 ** (18 - feed_.decimals);
         } else {
-            quoteAmount = uint256(quoteParams_.baseAmount) * uint256(answer) / 10 ** uint256(answerDecimals);
+            return uint256(answer) / 10 ** (feed_.decimals - 18);
         }
-        return _adjustQuoteDecimals(quoteAmount, quoteParams_);
     }
 
     /// adjust quoteAmount_ based on decimals of base & quote
     function _adjustQuoteDecimals(uint256 quoteAmount_, QuoteParams calldata quoteParams_)
         internal
         view
-        returns (uint256)
+        returns (uint256 finalAmount)
     {
         uint8 baseDecimals = quoteParams_.quotePair.base._decimals();
         uint8 quoteDecimals = quoteParams_.quotePair.quote._decimals();
 
-        int256 decimalAdjustment = int256(uint256(quoteDecimals)) - int256(uint256(baseDecimals));
-        if (decimalAdjustment > 0) {
-            return quoteAmount_ * 10 ** uint256(decimalAdjustment);
+        if (18 > quoteDecimals) {
+            finalAmount = quoteAmount_ / (10 ** (18 - quoteDecimals));
+        } else if (18 < quoteDecimals) {
+            finalAmount = quoteAmount_ * (10 ** (quoteDecimals - 18));
+        } else {
+            finalAmount = quoteAmount_;
         }
-        return quoteAmount_ / 10 ** uint256(-decimalAdjustment);
+        return finalAmount * quoteParams_.baseAmount / 10 ** baseDecimals;
     }
 
-    /// if set, convert token to override
-    function _convert(address token_) internal view returns (address tokenOverride) {
-        tokenOverride = $_tokenOverrides[token_];
-        if (tokenOverride._isEmpty() && token_._isNotEmpty()) {
-            tokenOverride = token_;
-        }
+    function _convert(address token_) internal view returns (address) {
+        return token_._isETH() ? weth9 : token_;
     }
 }
