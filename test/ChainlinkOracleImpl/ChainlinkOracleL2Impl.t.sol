@@ -45,9 +45,7 @@ contract Unpaused_Initialized_ChainlinkOracleL2ImplTest is
 
         Uninitialized_PausableImplBase.setUp();
 
-        $oracleFactory = IChainlinkOracleFactory(
-            address(new ChainlinkOracleL2Factory(WETH9_ARB, AggregatorV3Interface(SEQUENCER_FEED)))
-        );
+        $oracleFactory = IChainlinkOracleFactory(address(new ChainlinkOracleL2Factory(WETH9_ARB, SEQUENCER_FEED)));
 
         /// setup feeds
         ChainlinkOracleImpl.Feed memory USDC_USD_FEED = ChainlinkOracleImpl.Feed({
@@ -163,7 +161,7 @@ contract Unpaused_Initialized_ChainlinkOracleL2ImplTest is
         );
 
         _setUpChainlinkOracleImplState({
-            oracle_: address($oracleFactory.chainlinkOracleImpl()),
+            oracle_: address($oracleFactory.ORACLE()),
             owner_: users.alice,
             paused_: false,
             notFactory_: users.eve,

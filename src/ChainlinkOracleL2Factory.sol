@@ -2,52 +2,72 @@
 pragma solidity ^0.8.17;
 
 import {LibClone} from "solady/utils/LibClone.sol";
-import {IOracle} from "./interfaces/IOracle.sol";
-import {IOracleFactory} from "./interfaces/IOracleFactory.sol";
+import {IChainlinkOracleFactory} from "./interfaces/IChainlinkOracleFactory.sol";
 import {ChainlinkOracleL2Impl} from "./ChainlinkOracleL2Impl.sol";
 import {ChainlinkOracleImpl} from "./ChainlinkOracleImpl.sol";
-import {AggregatorV3Interface} from "chainlink/interfaces/AggregatorV3Interface.sol";
 
 /// @title Chainlink Oracle Factory
 /// @author 0xSplits
 /// @notice Factory for creating Chainlink Oracles
-contract ChainlinkOracleL2Factory is IOracleFactory {
+contract ChainlinkOracleL2Factory is IChainlinkOracleFactory {
+    /// -----------------------------------------------------------------------
+    /// libraries
+    /// -----------------------------------------------------------------------
+
     using LibClone for address;
 
-    event CreateChainlinkOracle(ChainlinkOracleL2Impl indexed oracle, ChainlinkOracleL2Impl.InitParams params);
+    /// -----------------------------------------------------------------------
+    /// storage - constants & immutables
+    /// -----------------------------------------------------------------------
 
-    ChainlinkOracleL2Impl public immutable chainlinkOracleImpl;
+    address public immutable ORACLE;
 
-    constructor(address weth9_, AggregatorV3Interface sequencerFeed_) {
-        chainlinkOracleImpl = new ChainlinkOracleL2Impl(weth9_, sequencerFeed_);
+    /// -----------------------------------------------------------------------
+    /// constructor
+    /// -----------------------------------------------------------------------
+
+    constructor(address weth9_, address sequencerFeed_) {
+        ORACLE = address(new ChainlinkOracleL2Impl(weth9_, sequencerFeed_));
     }
 
     /// -----------------------------------------------------------------------
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    function createChainlinkOracle(ChainlinkOracleL2Impl.InitParams calldata params_)
+    /// @inheritdoc IChainlinkOracleFactory
+    function createChainlinkOracle(ChainlinkOracleImpl.InitParams calldata params_, bytes32 salt_)
         external
-        returns (ChainlinkOracleL2Impl)
+        returns (address)
     {
-        return _createChainlinkOracle(params_);
+        return _createChainlinkOracle(params_, salt_);
     }
 
-    function createOracle(bytes calldata data_) external returns (IOracle) {
+    /// @inheritdoc IChainlinkOracleFactory
+    function createOracle(bytes calldata data_, bytes32 salt_) external returns (address) {
         ChainlinkOracleImpl.InitParams memory params = abi.decode(data_, (ChainlinkOracleImpl.InitParams));
-        return _createChainlinkOracle(params);
+        return _createChainlinkOracle(params, salt_);
+    }
+
+    /// @inheritdoc IChainlinkOracleFactory
+    function predictDeterministicAddress(ChainlinkOracleImpl.InitParams calldata params_, bytes32 salt_)
+        external
+        view
+        returns (address)
+    {
+        return ORACLE.predictDeterministicAddress(keccak256(abi.encode(params_, salt_)), address(this));
     }
 
     /// -----------------------------------------------------------------------
     /// functions - private & internal
     /// -----------------------------------------------------------------------
 
-    function _createChainlinkOracle(ChainlinkOracleImpl.InitParams memory params_)
+    function _createChainlinkOracle(ChainlinkOracleImpl.InitParams memory params_, bytes32 salt_)
         internal
-        returns (ChainlinkOracleL2Impl oracle)
+        returns (address oracle)
     {
-        oracle = ChainlinkOracleL2Impl(address(chainlinkOracleImpl).clone());
-        oracle.initializer(params_);
+        salt_ = keccak256(abi.encode(params_, salt_));
+        oracle = address(ORACLE.cloneDeterministic(salt_));
+        ChainlinkOracleImpl(oracle).initializer(params_);
         emit CreateChainlinkOracle({oracle: oracle, params: params_});
     }
 }

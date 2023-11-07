@@ -37,8 +37,8 @@ contract ChainlinkOracleL2Impl is ChainlinkOracleImpl {
      * @param weth9_ address of WETH9 contract
      * @param sequencerFeed_ address of sequencer feed
      */
-    constructor(address weth9_, AggregatorV3Interface sequencerFeed_) ChainlinkOracleImpl(weth9_) {
-        sequencerFeed = sequencerFeed_;
+    constructor(address weth9_, address sequencerFeed_) ChainlinkOracleImpl(weth9_) {
+        sequencerFeed = AggregatorV3Interface(sequencerFeed_);
     }
 
     /// -----------------------------------------------------------------------

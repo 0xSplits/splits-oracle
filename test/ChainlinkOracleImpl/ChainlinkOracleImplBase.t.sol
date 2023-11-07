@@ -36,6 +36,8 @@ abstract contract Uninitialized_ChainlinkOracleImplBase is Uninitialized_Pausabl
 
     address constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
 
+    bytes32 $salt = keccak256(abi.encodePacked("salt"));
+
     QuotePair $wethETH;
     QuotePair $usdcETH;
     QuotePair $daiETH;
@@ -196,7 +198,7 @@ abstract contract Uninitialized_ChainlinkOracleImplBase is Uninitialized_Pausabl
         );
 
         _setUpChainlinkOracleImplState({
-            oracle_: address($oracleFactory.chainlinkOracleImpl()),
+            oracle_: address($oracleFactory.ORACLE()),
             owner_: users.alice,
             paused_: false,
             notFactory_: users.eve,
@@ -274,7 +276,7 @@ abstract contract Uninitialized_ChainlinkOracleImplBase is Uninitialized_Pausabl
     }
 
     function _initialize() internal virtual override {
-        $oracle = IChainlinkOracle(address($oracleFactory.createChainlinkOracle(_initParams())));
+        $oracle = IChainlinkOracle(address($oracleFactory.createChainlinkOracle(_initParams(), $salt)));
         $ownable = OwnableImplHarness(address($oracle));
         $pausable = PausableImplHarness(address($oracle));
     }
