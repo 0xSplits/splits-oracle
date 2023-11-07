@@ -7,8 +7,8 @@ import {ConvertedQuotePair, QuotePair, QuoteParams} from "splits-utils/LibQuotes
 import {QuotePair, QuoteParams} from "splits-utils/LibQuotes.sol";
 import {TokenUtils} from "splits-utils/TokenUtils.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
-import {OracleImpl} from "./OracleImpl.sol";
-import {ChainlinkPairDetails} from "./libraries/ChainlinkPairDetails.sol";
+import {OracleImpl} from "../../OracleImpl.sol";
+import {ChainlinkPairDetails} from "../../libraries/ChainlinkPairDetails.sol";
 
 /// @title Chainlink Oracle Implementation
 /// @author 0xSplits
@@ -201,20 +201,20 @@ contract ChainlinkOracleImpl is OracleImpl {
         Feed[] memory feeds = abi.decode(pd.path, (Feed[]));
         uint256 feedLength = feeds.length;
 
-        uint256 finalAnswer = 1e18;
+        uint256 price = 1e18;
         for (uint256 i; i < feedLength;) {
             uint256 answer = _getFeedAnswer(feeds[i]);
             if (feeds[i].mul) {
-                finalAnswer = finalAnswer.mulWadDown(answer);
+                price = price.mulWadDown(answer);
             } else {
-                finalAnswer = finalAnswer.divWadDown(answer);
+                price = price.divWadDown(answer);
             }
             unchecked {
                 ++i;
             }
         }
-        if (pd.inverted) finalAnswer = uint256(1e18).divWadDown(finalAnswer);
-        return _adjustQuoteDecimals(finalAnswer, quoteParams_);
+        if (pd.inverted) price = uint256(1e18).divWadDown(price);
+        return _convertPriceToQuoteAmount(price, quoteParams_);
     }
 
     function _getFeedAnswer(Feed memory feed_) internal view returns (uint256) {
@@ -240,7 +240,7 @@ contract ChainlinkOracleImpl is OracleImpl {
         }
     }
 
-    function _adjustQuoteDecimals(uint256 quoteAmount_, QuoteParams calldata quoteParams_)
+    function _convertPriceToQuoteAmount(uint256 quoteAmount_, QuoteParams calldata quoteParams_)
         internal
         view
         returns (uint256 finalAmount)

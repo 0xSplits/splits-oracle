@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ChainlinkOracleFactory} from "../../src/ChainlinkOracleFactory.sol";
-import {ChainlinkOracleImpl} from "../../src/ChainlinkOracleImpl.sol";
+import {ChainlinkOracleFactory} from "src/chainlink/factory/ChainlinkOracleFactory.sol";
+import {ChainlinkOracleImpl} from "src/chainlink/oracle/ChainlinkOracleImpl.sol";
 import "splits-tests/Base.t.sol";
 
 contract ChainlinkOracleFactoryTest is BaseTest {
@@ -22,6 +22,17 @@ contract ChainlinkOracleFactoryTest is BaseTest {
         address predictedAddress = $factory.predictDeterministicAddress(params, salt_);
 
         address oracle = $factory.createChainlinkOracle(params, salt_);
+        assertEq(oracle, predictedAddress);
+        assertEq(ChainlinkOracleImpl(oracle).owner(), users.alice);
+    }
+
+    function testFuzz_createOracle_addressAsPredicted(bytes32 salt_) public {
+        ChainlinkOracleImpl.InitParams memory params =
+            ChainlinkOracleImpl.InitParams({owner: users.alice, paused: false, pairDetails: $pairDetails});
+
+        address predictedAddress = $factory.predictDeterministicAddress(params, salt_);
+
+        address oracle = $factory.createOracle(abi.encode(params), salt_);
         assertEq(oracle, predictedAddress);
         assertEq(ChainlinkOracleImpl(oracle).owner(), users.alice);
     }

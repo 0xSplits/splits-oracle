@@ -2,32 +2,18 @@
 pragma solidity ^0.8.17;
 
 import {LibClone} from "solady/utils/LibClone.sol";
-import {IChainlinkOracleFactory} from "./interfaces/IChainlinkOracleFactory.sol";
-import {ChainlinkOracleImpl} from "./ChainlinkOracleImpl.sol";
+import {IChainlinkOracleFactory} from "../../interfaces/IChainlinkOracleFactory.sol";
+import {ChainlinkOracleImpl} from "../oracle/ChainlinkOracleImpl.sol";
 
-/// @title Chainlink Oracle Factory
+/// @title Base Chainlink Oracle Factory
 /// @author 0xSplits
 /// @notice Factory for creating Chainlink Oracles
-contract ChainlinkOracleFactory is IChainlinkOracleFactory {
+abstract contract BaseChainlinkOracleFactory is IChainlinkOracleFactory {
     /// -----------------------------------------------------------------------
     /// libraries
     /// -----------------------------------------------------------------------
 
     using LibClone for address;
-
-    /// -----------------------------------------------------------------------
-    /// storage - constants & immutables
-    /// -----------------------------------------------------------------------
-
-    address public immutable ORACLE;
-
-    /// -----------------------------------------------------------------------
-    /// constructor
-    /// -----------------------------------------------------------------------
-
-    constructor(address weth9_) {
-        ORACLE = address(new ChainlinkOracleImpl(weth9_));
-    }
 
     /// -----------------------------------------------------------------------
     /// functions - public & external
@@ -53,8 +39,10 @@ contract ChainlinkOracleFactory is IChainlinkOracleFactory {
         view
         returns (address)
     {
-        return ORACLE.predictDeterministicAddress(keccak256(abi.encode(params_, salt_)), address(this));
+        return oracleImplementation().predictDeterministicAddress(keccak256(abi.encode(params_, salt_)), address(this));
     }
+
+    function oracleImplementation() public view virtual returns (address oracle_) {}
 
     /// -----------------------------------------------------------------------
     /// functions - private & internal
@@ -65,7 +53,7 @@ contract ChainlinkOracleFactory is IChainlinkOracleFactory {
         returns (address oracle)
     {
         salt_ = keccak256(abi.encode(params_, salt_));
-        oracle = address(ORACLE.cloneDeterministic(salt_));
+        oracle = oracleImplementation().cloneDeterministic(salt_);
         ChainlinkOracleImpl(oracle).initializer(params_);
         emit CreateChainlinkOracle({oracle: oracle, params: params_});
     }

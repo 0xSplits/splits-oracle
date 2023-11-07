@@ -10,8 +10,8 @@ import {
 } from "splits-tests/PausableImpl/PausableImplBase.t.sol";
 import {OwnableImplHarness} from "splits-tests/OwnableImpl/OwnableImplBase.t.sol";
 import {QuotePair, QuoteParams} from "splits-utils/LibQuotes.sol";
-import {ChainlinkOracleFactory} from "../../src/ChainlinkOracleFactory.sol";
-import {ChainlinkOracleImpl} from "../../src/ChainlinkOracleImpl.sol";
+import {ChainlinkOracleFactory} from "src/chainlink/factory/ChainlinkOracleFactory.sol";
+import {ChainlinkOracleImpl} from "src/chainlink/oracle/ChainlinkOracleImpl.sol";
 import {IChainlinkOracleFactory} from "../../src/interfaces/IChainlinkOracleFactory.sol";
 import {IOracle} from "../../src/interfaces/IOracle.sol";
 
@@ -198,7 +198,7 @@ abstract contract Uninitialized_ChainlinkOracleImplBase is Uninitialized_Pausabl
         );
 
         _setUpChainlinkOracleImplState({
-            oracle_: address($oracleFactory.ORACLE()),
+            oracle_: address($oracleFactory.oracleImplementation()),
             owner_: users.alice,
             paused_: false,
             notFactory_: users.eve,

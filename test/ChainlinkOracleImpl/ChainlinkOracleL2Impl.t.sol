@@ -5,12 +5,12 @@ import {
     Unpaused_Initialized_ChainlinkOracleImplTest,
     Initialized_ChainlinkOracleImplTest
 } from "./ChainlinkOracleImpl.t.sol";
-import {ChainlinkOracleL2Impl} from "../../src/ChainlinkOracleL2Impl.sol";
-import {ChainlinkOracleL2Factory} from "../../src/ChainlinkOracleL2Factory.sol";
+import {ChainlinkOracleL2Impl} from "src/chainlink/oracle/ChainlinkOracleL2Impl.sol";
+import {ChainlinkOracleL2Factory} from "src/chainlink/factory/ChainlinkOracleL2Factory.sol";
 import {AggregatorV3Interface} from "chainlink/interfaces/AggregatorV3Interface.sol";
 import {IChainlinkOracleFactory} from "../../src/interfaces/IChainlinkOracleFactory.sol";
 import {IOracle} from "../../src/interfaces/IOracle.sol";
-import {ChainlinkOracleImpl} from "../../src/ChainlinkOracleImpl.sol";
+import {ChainlinkOracleImpl} from "src/chainlink/oracle/ChainlinkOracleImpl.sol";
 import {QuotePair, QuoteParams} from "splits-utils/LibQuotes.sol";
 import {
     Initialized_ChainlinkOracleImplBase,
@@ -161,7 +161,7 @@ contract Unpaused_Initialized_ChainlinkOracleL2ImplTest is
         );
 
         _setUpChainlinkOracleImplState({
-            oracle_: address($oracleFactory.ORACLE()),
+            oracle_: address($oracleFactory.oracleImplementation()),
             owner_: users.alice,
             paused_: false,
             notFactory_: users.eve,

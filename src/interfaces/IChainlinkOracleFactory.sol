@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {ChainlinkOracleImpl} from "../ChainlinkOracleImpl.sol";
+import {ChainlinkOracleImpl} from "../chainlink/oracle/ChainlinkOracleImpl.sol";
 
 /// @title Oracle factory interface
 interface IChainlinkOracleFactory {
@@ -45,5 +45,5 @@ interface IChainlinkOracleFactory {
         returns (address);
 
     /// @notice The oracle implementation
-    function ORACLE() external view returns (address);
+    function oracleImplementation() external view returns (address);
 }

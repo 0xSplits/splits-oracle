@@ -15,10 +15,10 @@ import {
     Uninitialized_ChainlinkOracleImplBase,
     Unpaused_Initialized_ChainlinkOracleImplBase
 } from "./ChainlinkOracleImplBase.t.sol";
-import {ChainlinkOracleFactory} from "../../src/ChainlinkOracleFactory.sol";
+import {ChainlinkOracleFactory} from "src/chainlink/factory/ChainlinkOracleFactory.sol";
 import {IOracle} from "../../src/interfaces/IOracle.sol";
 import {OracleParams} from "../../src/peripherals/OracleParams.sol";
-import {ChainlinkOracleImpl} from "../../src/ChainlinkOracleImpl.sol";
+import {ChainlinkOracleImpl} from "src/chainlink/oracle/ChainlinkOracleImpl.sol";
 import {ChainlinkPairDetails} from "../../src/libraries/ChainlinkPairDetails.sol";
 
 contract Unintialized_ChainlinkOracleImplTest is

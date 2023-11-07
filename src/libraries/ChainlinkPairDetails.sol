@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {ConvertedQuotePair, QuotePair, SortedConvertedQuotePair} from "splits-utils/LibQuotes.sol";
-import {ChainlinkOracleImpl} from "../ChainlinkOracleImpl.sol";
+import {ChainlinkOracleImpl} from "../chainlink/oracle/ChainlinkOracleImpl.sol";
 
 /// @title Chainlink PairDetails Library
 /// @author 0xSplits
