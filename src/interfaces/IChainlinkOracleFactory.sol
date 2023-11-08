@@ -17,32 +17,19 @@ interface IChainlinkOracleFactory {
 
     /**
      * @notice Create a new Chainlink Oracle
-     * @param params_ The init params
-     * @param salt_ The salt
+     * @param data_ abi encoded initial chainlink oracle params
+     * @param salt_ user defined salt
      * @return oracle The oracle address
      */
-    function createOracle(bytes calldata params_, bytes32 salt_) external returns (address);
+    function createOracle(bytes calldata data_, bytes32 salt_) external returns (address);
 
     /**
      * @notice Predict the address of a new Chainlink Oracle
-     * @param params_ The init params
-     * @param salt_ The salt
+     * @param data_ abi encoded initial chainlink oracle params
+     * @param salt_ user defined salt
      * @return oracle The oracle address
      */
-    function createChainlinkOracle(ChainlinkOracleImpl.InitParams calldata params_, bytes32 salt_)
-        external
-        returns (address);
-
-    /**
-     * @notice Predict the address of a new Chainlink Oracle
-     * @param params_ The init params
-     * @param salt_ The salt
-     * @return oracle The oracle address
-     */
-    function predictDeterministicAddress(ChainlinkOracleImpl.InitParams calldata params_, bytes32 salt_)
-        external
-        view
-        returns (address);
+    function predictDeterministicAddress(bytes calldata data_, bytes32 salt_) external view returns (address);
 
     /// @notice The oracle implementation
     function oracleImplementation() external view returns (address);

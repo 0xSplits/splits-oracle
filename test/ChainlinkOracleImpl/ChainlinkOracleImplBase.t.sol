@@ -276,7 +276,7 @@ abstract contract Uninitialized_ChainlinkOracleImplBase is Uninitialized_Pausabl
     }
 
     function _initialize() internal virtual override {
-        $oracle = IChainlinkOracle(address($oracleFactory.createChainlinkOracle(_initParams(), $salt)));
+        $oracle = IChainlinkOracle(address($oracleFactory.createOracle(abi.encode(_initParams()), $salt)));
         $ownable = OwnableImplHarness(address($oracle));
         $pausable = PausableImplHarness(address($oracle));
     }

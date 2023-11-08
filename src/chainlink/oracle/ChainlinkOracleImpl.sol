@@ -55,7 +55,7 @@ contract ChainlinkOracleImpl is OracleImpl {
 
     struct Feed {
         AggregatorV3Interface feed;
-        /// @dev staleAfter > 1 hours
+        /// @dev should be > 1 hours
         uint32 staleAfter;
         /// @dev decimals should be same as feed.decimals()
         uint8 decimals;
@@ -79,6 +79,7 @@ contract ChainlinkOracleImpl is OracleImpl {
 
     address public immutable weth9;
     address public immutable chainlinkOracleFactory;
+    uint256 internal constant WAD = 1e18;
 
     /// -----------------------------------------------------------------------
     /// storage - mutables
@@ -201,7 +202,7 @@ contract ChainlinkOracleImpl is OracleImpl {
         Feed[] memory feeds = abi.decode(pd.path, (Feed[]));
         uint256 feedLength = feeds.length;
 
-        uint256 price = 1e18;
+        uint256 price = WAD;
         for (uint256 i; i < feedLength;) {
             uint256 answer = _getFeedAnswer(feeds[i]);
             if (feeds[i].mul) {
@@ -213,7 +214,7 @@ contract ChainlinkOracleImpl is OracleImpl {
                 ++i;
             }
         }
-        if (pd.inverted) price = uint256(1e18).divWadDown(price);
+        if (pd.inverted) price = WAD.divWadDown(price);
         return _convertPriceToQuoteAmount(price, quoteParams_);
     }
 
@@ -240,7 +241,7 @@ contract ChainlinkOracleImpl is OracleImpl {
         }
     }
 
-    function _convertPriceToQuoteAmount(uint256 quoteAmount_, QuoteParams calldata quoteParams_)
+    function _convertPriceToQuoteAmount(uint256 price_, QuoteParams calldata quoteParams_)
         internal
         view
         returns (uint256 finalAmount)
@@ -249,11 +250,11 @@ contract ChainlinkOracleImpl is OracleImpl {
         uint8 quoteDecimals = quoteParams_.quotePair.quote._decimals();
 
         if (18 > quoteDecimals) {
-            finalAmount = quoteAmount_ / (10 ** (18 - quoteDecimals));
+            finalAmount = price_ / (10 ** (18 - quoteDecimals));
         } else if (18 < quoteDecimals) {
-            finalAmount = quoteAmount_ * (10 ** (quoteDecimals - 18));
+            finalAmount = price_ * (10 ** (quoteDecimals - 18));
         } else {
-            finalAmount = quoteAmount_;
+            finalAmount = price_;
         }
         return finalAmount * quoteParams_.baseAmount / 10 ** baseDecimals;
     }
