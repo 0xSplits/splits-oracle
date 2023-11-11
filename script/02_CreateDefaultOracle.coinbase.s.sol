@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 
 import {CreateDefaultOracleBaseScript} from "./02_CreateDefaultOracle.base.s.sol";
 
-contract CreateDefaultOracleMainnetScript is CreateDefaultOracleBaseScript {
+contract CreateDefaultOracleCoinbaseScript is CreateDefaultOracleBaseScript {
     using stdJson for string;
 
     address constant WETH9 = 0x4200000000000000000000000000000000000006;
