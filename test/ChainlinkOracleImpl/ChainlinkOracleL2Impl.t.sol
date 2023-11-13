@@ -23,11 +23,14 @@ import {
     PausableImplHarness,
     Uninitialized_PausableImplBase
 } from "splits-tests/PausableImpl/PausableImplBase.t.sol";
+import {ChainlinkPath} from "../../src/libraries/ChainlinkPath.sol";
 
 contract Unpaused_Initialized_ChainlinkOracleL2ImplTest is
     Initialized_ChainlinkOracleImplTest,
     Unpaused_Initialized_ChainlinkOracleImplBase
 {
+    using ChainlinkPath for ChainlinkOracleImpl.Feed[];
+
     address constant SEQUENCER_FEED = 0xFdB631F5EE196F0ed6FAa767959853A9F217697D;
 
     address constant WETH9_ARB = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
@@ -102,35 +105,35 @@ contract Unpaused_Initialized_ChainlinkOracleL2ImplTest is
         $pairDetails.push(
             ChainlinkOracleImpl.SetPairDetailParams({
                 quotePair: $usdcETH,
-                pairDetail: ChainlinkOracleImpl.PairDetail({path: abi.encode(usdcETHPath), inverted: false})
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdcETHPath.getPath(), inverted: false})
             })
         );
 
         $pairDetails.push(
             ChainlinkOracleImpl.SetPairDetailParams({
                 quotePair: $daiETH,
-                pairDetail: ChainlinkOracleImpl.PairDetail({path: abi.encode(daiETHPath), inverted: false})
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: daiETHPath.getPath(), inverted: false})
             })
         );
 
         $pairDetails.push(
             ChainlinkOracleImpl.SetPairDetailParams({
                 quotePair: $ethUSDT,
-                pairDetail: ChainlinkOracleImpl.PairDetail({path: abi.encode(usdtETHPath), inverted: false})
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdtETHPath.getPath(), inverted: false})
             })
         );
 
         $pairDetails.push(
             ChainlinkOracleImpl.SetPairDetailParams({
                 quotePair: $daiUSDC,
-                pairDetail: ChainlinkOracleImpl.PairDetail({path: abi.encode(daiUSDCPath), inverted: false})
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: daiUSDCPath.getPath(), inverted: false})
             })
         );
 
         $nextPairDetails.push(
             ChainlinkOracleImpl.SetPairDetailParams({
                 quotePair: $usdcETH,
-                pairDetail: ChainlinkOracleImpl.PairDetail({path: abi.encode(usdcETHPath), inverted: false})
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdcETHPath.getPath(), inverted: false})
             })
         );
 

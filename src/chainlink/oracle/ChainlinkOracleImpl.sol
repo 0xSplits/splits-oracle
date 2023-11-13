@@ -9,6 +9,7 @@ import {TokenUtils} from "splits-utils/TokenUtils.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {OracleImpl} from "../../OracleImpl.sol";
 import {ChainlinkPairDetails} from "../../libraries/ChainlinkPairDetails.sol";
+import {ChainlinkPath} from "../../libraries/ChainlinkPath.sol";
 
 /// @title Chainlink Oracle Implementation
 /// @author 0xSplits
@@ -23,6 +24,7 @@ contract ChainlinkOracleImpl is OracleImpl {
     using TokenUtils for address;
     using ChainlinkPairDetails for mapping(address => mapping(address => PairDetail));
     using FixedPointMathLib for uint256;
+    using ChainlinkPath for bytes;
 
     /// -----------------------------------------------------------------------
     /// errors
@@ -56,7 +58,7 @@ contract ChainlinkOracleImpl is OracleImpl {
     struct Feed {
         AggregatorV3Interface feed;
         /// @dev should be > 1 hours
-        uint32 staleAfter;
+        uint24 staleAfter;
         /// @dev decimals should be same as feed.decimals()
         uint8 decimals;
         /// @dev mul should be true for the first feed in the path
@@ -199,7 +201,7 @@ contract ChainlinkOracleImpl is OracleImpl {
             revert InvalidPair_FeedNotSet(quoteParams_.quotePair);
         }
 
-        Feed[] memory feeds = abi.decode(pd.path, (Feed[]));
+        Feed[] memory feeds = pd.path.getFeeds();
         uint256 feedLength = feeds.length;
 
         uint256 price = WAD;

@@ -20,6 +20,7 @@ import {IOracle} from "../../src/interfaces/IOracle.sol";
 import {OracleParams} from "../../src/peripherals/OracleParams.sol";
 import {ChainlinkOracleImpl} from "src/chainlink/oracle/ChainlinkOracleImpl.sol";
 import {ChainlinkPairDetails} from "../../src/libraries/ChainlinkPairDetails.sol";
+import {ChainlinkPath} from "../../src/libraries/ChainlinkPath.sol";
 
 contract Unintialized_ChainlinkOracleImplTest is
     Uninitialized_PausableImplTest,
@@ -93,6 +94,8 @@ contract Unintialized_ChainlinkOracleImplTest is
 }
 
 contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, Initialized_ChainlinkOracleImplBase {
+    using ChainlinkPath for ChainlinkOracleImpl.Feed[];
+
     function setUp() public virtual override(Initialized_PausableImplTest, Initialized_ChainlinkOracleImplBase) {
         Initialized_ChainlinkOracleImplBase.setUp();
     }
@@ -139,11 +142,11 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
         QuotePair memory quotePair_,
         ChainlinkOracleImpl.Feed memory feed_
     ) public callerOwner {
-        vm.assume(feed_.staleAfter > 1 hours && feed_.mul == true);
+        vm.assume(feed_.staleAfter > 1 hours && feed_.mul == true && quotePair_.base != quotePair_.quote);
         ChainlinkOracleImpl.Feed[] memory feed = new ChainlinkOracleImpl.Feed[](1);
         feed[0] = feed_;
         ChainlinkOracleImpl.PairDetail memory nextPairDetail =
-            ChainlinkOracleImpl.PairDetail({path: abi.encode(feed), inverted: false});
+            ChainlinkOracleImpl.PairDetail({path: feed.getPath(), inverted: false});
         ChainlinkOracleImpl.SetPairDetailParams memory nextSetPairDetails_ =
             ChainlinkOracleImpl.SetPairDetailParams({quotePair: quotePair_, pairDetail: nextPairDetail});
         uint256 length = 1;
@@ -181,7 +184,7 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
             ChainlinkOracleImpl.Feed({feed: AggregatorV3Interface(address(0)), staleAfter: 0, decimals: 0, mul: true});
 
         ChainlinkOracleImpl.PairDetail memory nextPairDetail =
-            ChainlinkOracleImpl.PairDetail({path: abi.encode(feed), inverted: false});
+            ChainlinkOracleImpl.PairDetail({path: feed.getPath(), inverted: false});
 
         ChainlinkOracleImpl.SetPairDetailParams memory nextSetPairDetails_ = ChainlinkOracleImpl.SetPairDetailParams({
             quotePair: $nextPairDetails[0].quotePair,
@@ -207,7 +210,7 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
         });
 
         ChainlinkOracleImpl.PairDetail memory nextPairDetail =
-            ChainlinkOracleImpl.PairDetail({path: abi.encode(feed), inverted: false});
+            ChainlinkOracleImpl.PairDetail({path: feed.getPath(), inverted: false});
 
         ChainlinkOracleImpl.SetPairDetailParams memory nextSetPairDetails_ = ChainlinkOracleImpl.SetPairDetailParams({
             quotePair: $nextPairDetails[0].quotePair,
@@ -232,7 +235,7 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
         });
 
         ChainlinkOracleImpl.PairDetail memory nextPairDetail =
-            ChainlinkOracleImpl.PairDetail({path: abi.encode(feed), inverted: false});
+            ChainlinkOracleImpl.PairDetail({path: feed.getPath(), inverted: false});
 
         ChainlinkOracleImpl.SetPairDetailParams memory nextSetPairDetails_ = ChainlinkOracleImpl.SetPairDetailParams({
             quotePair: $nextPairDetails[0].quotePair,
@@ -244,6 +247,24 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
         nextSetPairDetails[0] = nextSetPairDetails_;
 
         vm.expectRevert(ChainlinkPairDetails.InvalidFeed_Mul.selector);
+        $oracle.setPairDetails(nextSetPairDetails);
+    }
+
+    function testFork_setPairDetails_reverts_invalidFeed_Empty() public callerOwner {
+        bytes memory path;
+        ChainlinkOracleImpl.PairDetail memory nextPairDetail =
+            ChainlinkOracleImpl.PairDetail({path: path, inverted: false});
+
+        ChainlinkOracleImpl.SetPairDetailParams memory nextSetPairDetails_ = ChainlinkOracleImpl.SetPairDetailParams({
+            quotePair: $nextPairDetails[0].quotePair,
+            pairDetail: nextPairDetail
+        });
+
+        ChainlinkOracleImpl.SetPairDetailParams[] memory nextSetPairDetails =
+            new ChainlinkOracleImpl.SetPairDetailParams[](1);
+        nextSetPairDetails[0] = nextSetPairDetails_;
+
+        vm.expectRevert(ChainlinkPairDetails.InvalidFeed_Empty.selector);
         $oracle.setPairDetails(nextSetPairDetails);
     }
 }
@@ -292,6 +313,7 @@ contract Unpaused_Initialized_ChainlinkOracleImplTest is
     Unpaused_Initialized_ChainlinkOracleImplBase
 {
     using TokenUtils for address;
+    using ChainlinkPath for ChainlinkOracleImpl.Feed[];
 
     function setUp()
         public
@@ -403,7 +425,7 @@ contract Unpaused_Initialized_ChainlinkOracleImplTest is
         ChainlinkOracleImpl.SetPairDetailParams[] memory pairDetails = new ChainlinkOracleImpl.SetPairDetailParams[](1);
         pairDetails[0] = ChainlinkOracleImpl.SetPairDetailParams({
             quotePair: $usdcETH,
-            pairDetail: ChainlinkOracleImpl.PairDetail({path: abi.encode(usdcETHPath), inverted: false})
+            pairDetail: ChainlinkOracleImpl.PairDetail({path: usdcETHPath.getPath(), inverted: false})
         });
         vm.mockCall(USDC_ETH_AGG, abi.encodeWithSelector(AggregatorV3Interface.decimals.selector), abi.encode(20));
         $oracle.setPairDetails(pairDetails);

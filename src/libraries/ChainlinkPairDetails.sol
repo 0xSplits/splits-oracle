@@ -3,17 +3,25 @@ pragma solidity ^0.8.17;
 
 import {ConvertedQuotePair, QuotePair, SortedConvertedQuotePair} from "splits-utils/LibQuotes.sol";
 import {ChainlinkOracleImpl} from "../chainlink/oracle/ChainlinkOracleImpl.sol";
+import {ChainlinkPath} from "./ChainlinkPath.sol";
 
 /// @title Chainlink PairDetails Library
 /// @author 0xSplits
 /// @notice Setters & getters for quote pairs' chainlink details
 library ChainlinkPairDetails {
     /// -----------------------------------------------------------------------
+    /// libraries
+    /// -----------------------------------------------------------------------
+
+    using ChainlinkPath for bytes;
+
+    /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
     error InvalidFeed_StaleAfter();
     error InvalidFeed_Decimals();
     error InvalidFeed_Mul();
+    error InvalidFeed_Empty();
 
     /// set pair details
     function _set(
@@ -61,9 +69,10 @@ library ChainlinkPairDetails {
     }
 
     function _validate(ChainlinkOracleImpl.SetPairDetailParams calldata params_) private view {
-        ChainlinkOracleImpl.Feed[] memory feed = abi.decode(params_.pairDetail.path, (ChainlinkOracleImpl.Feed[]));
+        ChainlinkOracleImpl.Feed[] memory feed = params_.pairDetail.path.getFeeds();
 
         uint256 length = feed.length;
+        if (length == 0) revert InvalidFeed_Empty();
         for (uint256 i; i < length;) {
             if (feed[i].staleAfter < 1 hours) revert InvalidFeed_StaleAfter();
             if (feed[i].feed.decimals() != feed[i].decimals) revert InvalidFeed_Decimals();
