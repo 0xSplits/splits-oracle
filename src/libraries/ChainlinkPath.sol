@@ -19,18 +19,19 @@ library ChainlinkPath {
     /// constants
     /// -----------------------------------------------------------------------
 
+    /// @dev size of one packed encoded feed
     uint24 private constant PATH_UNIT_SIZE = 25;
 
     /// -----------------------------------------------------------------------
     /// functions
     /// -----------------------------------------------------------------------
 
-    /// @notice get the length of a path
+    /// @notice get the number of feeds in the path
     function len(bytes memory path) internal pure returns (uint256) {
         return path.len(PATH_UNIT_SIZE);
     }
 
-    /// @notice get feeds from a path (bytes)
+    /// @notice get feeds from a path (packed encoded bytes)
     function getFeeds(bytes memory path) internal pure returns (ChainlinkOracleImpl.Feed[] memory feeds) {
         uint256 length = len(path);
         feeds = new ChainlinkOracleImpl.Feed[](length);
@@ -51,7 +52,7 @@ library ChainlinkPath {
         feed.mul = path.toUint8(offset + 24) == 2;
     }
 
-    /// @notice get path from feeds
+    /// @notice get a path (packed encoded bytes) from feeds
     function getPath(ChainlinkOracleImpl.Feed[] memory feeds) internal pure returns (bytes memory path) {
         uint256 length = feeds.length;
         for (uint256 i; i < length;) {

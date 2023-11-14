@@ -39,8 +39,11 @@ contract ChainlinkOracleImpl is OracleImpl {
     /// -----------------------------------------------------------------------
 
     struct InitParams {
+        /// @notice owner of the contract
         address owner;
+        /// @notice paused state of the contract
         bool paused;
+        /// @notice initial pair details
         SetPairDetailParams[] pairDetails;
     }
 
@@ -50,8 +53,9 @@ contract ChainlinkOracleImpl is OracleImpl {
     }
 
     struct PairDetail {
-        // encoded feed[]
+        /// @notice packed encoded feed[]
         bytes path;
+        /// @notice if true, the price calculated by the path will be inverted
         bool inverted;
     }
 
@@ -128,7 +132,7 @@ contract ChainlinkOracleImpl is OracleImpl {
 
     /**
      * @notice Set pair details
-     * @param params_ The set pair details params
+     * @param params_ The set pair details params consisting of quote pair and pair detail
      */
     function setPairDetails(SetPairDetailParams[] calldata params_) external onlyOwner {
         _setPairDetails(params_);
@@ -142,7 +146,7 @@ contract ChainlinkOracleImpl is OracleImpl {
     /**
      * @notice Get pair details
      * @param quotePairs_ The quote pairs
-     * @return pairDetails The pair details
+     * @return pairDetails The pair details for the quote pairs
      */
     function getPairDetails(QuotePair[] calldata quotePairs_) external view returns (PairDetail[] memory pairDetails) {
         uint256 length = quotePairs_.length;
