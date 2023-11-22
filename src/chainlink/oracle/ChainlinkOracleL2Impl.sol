@@ -66,19 +66,12 @@ contract ChainlinkOracleL2Impl is ChainlinkOracleImpl {
     /// -----------------------------------------------------------------------
 
     function _checkSequencerFeed() private view {
-        (
-            /*uint80 roundID*/
-            ,
-            int256 answer,
-            uint256 startedAt,
-            /*uint256 updatedAt*/
-            ,
-            /*uint80 answeredInRound*/
-        ) = sequencerFeed.latestRoundData();
+        (, /* uint80 roundId, */ int256 answer, uint256 startedAt,, /*uint256 updatedAt*/ /*uint80 answeredInRound*/ ) =
+            sequencerFeed.latestRoundData();
 
         // Answer == 0: Sequencer is up
         // Answer == 1: Sequencer is down
-        if (answer == 1) {
+        if (answer != 0) {
             revert SequencerDown();
         }
 

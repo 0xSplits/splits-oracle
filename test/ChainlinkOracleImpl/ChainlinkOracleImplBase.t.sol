@@ -75,35 +75,35 @@ abstract contract Uninitialized_ChainlinkOracleImplBase is Uninitialized_Pausabl
         /// setup feeds
         ChainlinkOracleImpl.Feed memory USDC_ETH_FEED = ChainlinkOracleImpl.Feed({
             feed: AggregatorV3Interface(USDC_ETH_AGG),
-            staleAfter: 86400,
+            staleAfter: 1 days,
             decimals: 18,
             mul: true
         });
 
         ChainlinkOracleImpl.Feed memory USDC_ETH_FEED_DIV = ChainlinkOracleImpl.Feed({
             feed: AggregatorV3Interface(USDC_ETH_AGG),
-            staleAfter: 86400,
+            staleAfter: 1 days,
             decimals: 18,
             mul: false
         });
 
         ChainlinkOracleImpl.Feed memory DAI_ETH_FEED = ChainlinkOracleImpl.Feed({
             feed: AggregatorV3Interface(DAI_ETH_AGG),
-            staleAfter: 86400,
+            staleAfter: 1 days,
             decimals: 18,
             mul: true
         });
 
         ChainlinkOracleImpl.Feed memory ETH_USD_FEED = ChainlinkOracleImpl.Feed({
             feed: AggregatorV3Interface(ETH_USD_AGG),
-            staleAfter: 86400,
+            staleAfter: 1 days,
             decimals: 8,
             mul: true
         });
 
         ChainlinkOracleImpl.Feed memory USDT_USD_FEED = ChainlinkOracleImpl.Feed({
             feed: AggregatorV3Interface(USDT_USD_AGG),
-            staleAfter: 86400,
+            staleAfter: 1 days,
             decimals: 8,
             mul: false
         });

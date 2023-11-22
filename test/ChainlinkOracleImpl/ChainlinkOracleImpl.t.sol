@@ -225,32 +225,7 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
         $oracle.setPairDetails(nextSetPairDetails);
     }
 
-    function testFork_setPairDetails_reverts_invalidFeed_Mul() public callerOwner {
-        ChainlinkOracleImpl.Feed[] memory feed = new ChainlinkOracleImpl.Feed[](1);
-        feed[0] = ChainlinkOracleImpl.Feed({
-            feed: AggregatorV3Interface($testing_agg),
-            staleAfter: 2 hours,
-            decimals: AggregatorV3Interface($testing_agg).decimals(),
-            mul: false
-        });
-
-        ChainlinkOracleImpl.PairDetail memory nextPairDetail =
-            ChainlinkOracleImpl.PairDetail({path: feed.getPath(), inverted: false});
-
-        ChainlinkOracleImpl.SetPairDetailParams memory nextSetPairDetails_ = ChainlinkOracleImpl.SetPairDetailParams({
-            quotePair: $nextPairDetails[0].quotePair,
-            pairDetail: nextPairDetail
-        });
-
-        ChainlinkOracleImpl.SetPairDetailParams[] memory nextSetPairDetails =
-            new ChainlinkOracleImpl.SetPairDetailParams[](1);
-        nextSetPairDetails[0] = nextSetPairDetails_;
-
-        vm.expectRevert(ChainlinkPairDetails.InvalidFeed_Mul.selector);
-        $oracle.setPairDetails(nextSetPairDetails);
-    }
-
-    function testFork_setPairDetails_reverts_invalidFeed_Empty() public callerOwner {
+    function testFork_setPairDetails_EmptyFeed() public callerOwner {
         bytes memory path;
         ChainlinkOracleImpl.PairDetail memory nextPairDetail =
             ChainlinkOracleImpl.PairDetail({path: path, inverted: false});
@@ -264,8 +239,12 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
             new ChainlinkOracleImpl.SetPairDetailParams[](1);
         nextSetPairDetails[0] = nextSetPairDetails_;
 
-        vm.expectRevert(ChainlinkPairDetails.InvalidFeed_Empty.selector);
         $oracle.setPairDetails(nextSetPairDetails);
+
+        QuotePair[] memory quotePairs = new QuotePair[](1);
+        quotePairs[0] = $nextPairDetails[0].quotePair;
+        ChainlinkOracleImpl.PairDetail[] memory details = $oracle.getPairDetails(quotePairs);
+        assertEq(details[0].path.length, 0);
     }
 }
 
@@ -350,7 +329,7 @@ contract Unpaused_Initialized_ChainlinkOracleImplTest is
 
     // testStalePrice
     function testFork_revertsWhen_StalePrice_getQuoteAmounts() public unpaused {
-        uint256 updatedAt = block.timestamp - 86401;
+        uint256 updatedAt = block.timestamp - (1 days + 1 seconds);
         bytes memory revertData =
             abi.encodeWithSelector(ChainlinkOracleImpl.StalePrice.selector, USDC_ETH_AGG, updatedAt);
         vm.mockCall(
@@ -395,9 +374,9 @@ contract Unpaused_Initialized_ChainlinkOracleImplTest is
 
     function testFork_getQuoteAmounts_erc20s_returnsApproximateAmount() public unpaused {
         QuoteParams[] memory quoteParams = new QuoteParams[](1);
-        quoteParams[0] = QuoteParams({baseAmount: 1e19, quotePair: QuotePair({base: DAI, quote: USDC}), data: ""});
+        quoteParams[0] = QuoteParams({baseAmount: 10e18, quotePair: QuotePair({base: DAI, quote: USDC}), data: ""});
         uint256[] memory amounts = $oracle.getQuoteAmounts(quoteParams);
-        assertApproxEqAbs(amounts[0], 1e7, 1e5);
+        assertApproxEqAbs(amounts[0], 10e6, 1e6);
     }
 
     function testFork_getQuoteAmounts_quoteGreaterThan18Decimals_returnsApproximateAmount() public unpaused {

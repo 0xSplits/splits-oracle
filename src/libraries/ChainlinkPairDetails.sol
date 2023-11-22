@@ -46,8 +46,8 @@ library ChainlinkPairDetails {
         ChainlinkOracleImpl.SetPairDetailParams calldata params_
     ) internal {
         ConvertedQuotePair memory cqp = params_.quotePair._convert(convert);
-        self[cqp.cBase][cqp.cQuote] = params_.pairDetail;
         ChainlinkOracleImpl.PairDetail memory pairDetail = params_.pairDetail;
+        self[cqp.cBase][cqp.cQuote] = pairDetail;
         pairDetail.inverted = !pairDetail.inverted;
         self[cqp.cQuote][cqp.cBase] = pairDetail;
     }
@@ -72,11 +72,9 @@ library ChainlinkPairDetails {
         ChainlinkOracleImpl.Feed[] memory feed = params_.pairDetail.path.getFeeds();
 
         uint256 length = feed.length;
-        if (length == 0) revert InvalidFeed_Empty();
         for (uint256 i; i < length;) {
             if (feed[i].staleAfter < 1 hours) revert InvalidFeed_StaleAfter();
             if (feed[i].feed.decimals() != feed[i].decimals) revert InvalidFeed_Decimals();
-            if (i == 0 && !feed[i].mul) revert InvalidFeed_Mul();
             unchecked {
                 ++i;
             }

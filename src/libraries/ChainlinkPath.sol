@@ -19,7 +19,7 @@ library ChainlinkPath {
     /// constants
     /// -----------------------------------------------------------------------
 
-    /// @dev size of one packed encoded feed
+    /// @dev size of one packed encoded feed (20 Bytes Feed + 3 Bytes StaleAfter + 1 Byte Decimals + 1 Byte Mul)
     uint24 private constant PATH_UNIT_SIZE = 25;
 
     /// -----------------------------------------------------------------------

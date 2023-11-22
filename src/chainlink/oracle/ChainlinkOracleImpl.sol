@@ -110,6 +110,8 @@ contract ChainlinkOracleImpl is OracleImpl {
     /**
      * @notice Initialize the contract
      * @param params_ The init params
+     * @dev There is no check to prevent this function from being called more than once if deployed without a factory,
+     *      It is recommended to use a factory to deploy this contract.
      */
     function initializer(InitParams calldata params_) external {
         // only chainlinkOracleFactory may call `initializer`
@@ -119,7 +121,6 @@ contract ChainlinkOracleImpl is OracleImpl {
         $paused = params_.paused;
 
         _setPairDetails(params_.pairDetails);
-        emit SetPairDetails(params_.pairDetails);
     }
 
     /// -----------------------------------------------------------------------
@@ -208,8 +209,8 @@ contract ChainlinkOracleImpl is OracleImpl {
         Feed[] memory feeds = pd.path.getFeeds();
         uint256 feedLength = feeds.length;
 
-        uint256 price = WAD;
-        for (uint256 i; i < feedLength;) {
+        uint256 price = _getFeedAnswer(feeds[0]);
+        for (uint256 i = 1; i < feedLength;) {
             uint256 answer = _getFeedAnswer(feeds[i]);
             if (feeds[i].mul) {
                 price = price.mulWadDown(answer);
@@ -255,14 +256,12 @@ contract ChainlinkOracleImpl is OracleImpl {
         uint8 baseDecimals = quoteParams_.quotePair.base._decimals();
         uint8 quoteDecimals = quoteParams_.quotePair.quote._decimals();
 
+        finalAmount = price_ * quoteParams_.baseAmount / 10 ** baseDecimals;
         if (18 > quoteDecimals) {
-            finalAmount = price_ / (10 ** (18 - quoteDecimals));
+            finalAmount = finalAmount / (10 ** (18 - quoteDecimals));
         } else if (18 < quoteDecimals) {
-            finalAmount = price_ * (10 ** (quoteDecimals - 18));
-        } else {
-            finalAmount = price_;
+            finalAmount = finalAmount * (10 ** (quoteDecimals - 18));
         }
-        return finalAmount * quoteParams_.baseAmount / 10 ** baseDecimals;
     }
 
     function _convert(address token_) internal view returns (address) {

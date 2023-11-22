@@ -31,6 +31,15 @@ interface IChainlinkOracleFactory {
      */
     function predictDeterministicAddress(bytes calldata data_, bytes32 salt_) external view returns (address);
 
+    /**
+     * @notice Check if a Chainlink Oracle is deployable
+     * @param data_ abi encoded initial chainlink oracle params
+     * @param salt_ user defined salt
+     * @return address The oracle address
+     * @return is_deployed True if the oracle is already deployed
+     */
+    function isDeployed(bytes calldata data_, bytes32 salt_) external view returns (address, bool);
+
     /// @notice The oracle implementation
     function oracleImplementation() external view returns (address);
 }
