@@ -65,7 +65,7 @@ contract ChainlinkOracleImpl is OracleImpl {
         uint24 staleAfter;
         /// @dev decimals should be same as feed.decimals()
         uint8 decimals;
-        /// @dev mul should be true for the first feed in the path
+        /// @dev operation to perform on the price with the previous price in the path
         bool mul;
     }
 
