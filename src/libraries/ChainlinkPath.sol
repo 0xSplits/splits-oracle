@@ -49,7 +49,7 @@ library ChainlinkPath {
         feed.feed = AggregatorV3Interface(path.toAddress(offset));
         feed.staleAfter = path.toUint24(offset + 20);
         feed.decimals = path.toUint8(offset + 23);
-        feed.mul = path.toUint8(offset + 24) == 2;
+        feed.mul = path.toUint8(offset + 24) == 1;
     }
 
     /// @notice get a path (packed encoded bytes) from feeds
@@ -59,7 +59,7 @@ library ChainlinkPath {
             path = bytes.concat(
                 path,
                 abi.encodePacked(
-                    feeds[i].feed, feeds[i].staleAfter, feeds[i].decimals, feeds[i].mul ? uint8(2) : uint8(1)
+                    feeds[i].feed, feeds[i].staleAfter, feeds[i].decimals, feeds[i].mul ? uint8(1) : uint8(0)
                 )
             );
             unchecked {
