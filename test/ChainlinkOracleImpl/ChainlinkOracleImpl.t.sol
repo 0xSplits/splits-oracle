@@ -225,6 +225,32 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
         $oracle.setPairDetails(nextSetPairDetails);
     }
 
+    function testForkFuzz_setPairDetails_reverts_len_extraBytes(bytes2 extra_) public callerOwner {
+        ChainlinkOracleImpl.Feed[] memory feed = new ChainlinkOracleImpl.Feed[](1);
+
+        feed[0] = ChainlinkOracleImpl.Feed({
+            feed: AggregatorV3Interface($testing_agg),
+            staleAfter: 2 hours,
+            decimals: 1,
+            mul: true
+        });
+
+        ChainlinkOracleImpl.PairDetail memory nextPairDetail =
+            ChainlinkOracleImpl.PairDetail({path: bytes.concat(feed.getPath(), extra_), inverted: false});
+
+        ChainlinkOracleImpl.SetPairDetailParams memory nextSetPairDetails_ = ChainlinkOracleImpl.SetPairDetailParams({
+            quotePair: $nextPairDetails[0].quotePair,
+            pairDetail: nextPairDetail
+        });
+
+        ChainlinkOracleImpl.SetPairDetailParams[] memory nextSetPairDetails =
+            new ChainlinkOracleImpl.SetPairDetailParams[](1);
+        nextSetPairDetails[0] = nextSetPairDetails_;
+
+        vm.expectRevert("len_extraBytes");
+        $oracle.setPairDetails(nextSetPairDetails);
+    }
+
     function testFork_setPairDetails_EmptyFeed() public callerOwner {
         bytes memory path;
         ChainlinkOracleImpl.PairDetail memory nextPairDetail =

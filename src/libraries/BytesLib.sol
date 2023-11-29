@@ -42,6 +42,7 @@ library BytesLib {
     }
 
     function len(bytes memory _bytes, uint256 _size) internal pure returns (uint256) {
+        require(_bytes.length % _size == 0, "len_extraBytes");
         return _bytes.length / _size;
     }
 }
