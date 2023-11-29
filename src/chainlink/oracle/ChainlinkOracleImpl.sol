@@ -62,7 +62,6 @@ contract ChainlinkOracleImpl is OracleImpl {
 
     struct Feed {
         AggregatorV3Interface feed;
-        /// @dev should be > 1 hours
         uint24 staleAfter;
         /// @dev decimals should be same as feed.decimals()
         uint8 decimals;

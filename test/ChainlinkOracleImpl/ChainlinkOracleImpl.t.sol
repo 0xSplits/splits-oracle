@@ -178,27 +178,6 @@ contract Initialized_ChainlinkOracleImplTest is Initialized_PausableImplTest, In
         $oracle.setPairDetails($nextPairDetails);
     }
 
-    function testFork_setPairDetails_reverts_invalidFeed_StaleAfter() public callerOwner {
-        ChainlinkOracleImpl.Feed[] memory feed = new ChainlinkOracleImpl.Feed[](1);
-        feed[0] =
-            ChainlinkOracleImpl.Feed({feed: AggregatorV3Interface(address(0)), staleAfter: 0, decimals: 0, mul: true});
-
-        ChainlinkOracleImpl.PairDetail memory nextPairDetail =
-            ChainlinkOracleImpl.PairDetail({path: feed.getPath(), inverted: false});
-
-        ChainlinkOracleImpl.SetPairDetailParams memory nextSetPairDetails_ = ChainlinkOracleImpl.SetPairDetailParams({
-            quotePair: $nextPairDetails[0].quotePair,
-            pairDetail: nextPairDetail
-        });
-
-        ChainlinkOracleImpl.SetPairDetailParams[] memory nextSetPairDetails =
-            new ChainlinkOracleImpl.SetPairDetailParams[](1);
-        nextSetPairDetails[0] = nextSetPairDetails_;
-
-        vm.expectRevert(ChainlinkPairDetails.InvalidFeed_StaleAfter.selector);
-        $oracle.setPairDetails(nextSetPairDetails);
-    }
-
     function testFork_setPairDetails_reverts_invalidFeed_Decimals() public callerOwner {
         ChainlinkOracleImpl.Feed[] memory feed = new ChainlinkOracleImpl.Feed[](1);
 

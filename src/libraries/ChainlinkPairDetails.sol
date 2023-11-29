@@ -73,7 +73,6 @@ library ChainlinkPairDetails {
 
         uint256 length = feed.length;
         for (uint256 i; i < length;) {
-            if (feed[i].staleAfter < 1 hours) revert InvalidFeed_StaleAfter();
             if (feed[i].feed.decimals() != feed[i].decimals) revert InvalidFeed_Decimals();
             unchecked {
                 ++i;
