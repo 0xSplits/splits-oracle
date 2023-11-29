@@ -256,12 +256,13 @@ contract ChainlinkOracleImpl is OracleImpl {
         uint8 baseDecimals = quoteParams_.quotePair.base._decimals();
         uint8 quoteDecimals = quoteParams_.quotePair.quote._decimals();
 
-        finalAmount = price_ * quoteParams_.baseAmount / 10 ** baseDecimals;
+        finalAmount = price_ * quoteParams_.baseAmount;
         if (18 > quoteDecimals) {
             finalAmount = finalAmount / (10 ** (18 - quoteDecimals));
         } else if (18 < quoteDecimals) {
             finalAmount = finalAmount * (10 ** (quoteDecimals - 18));
         }
+        finalAmount = finalAmount / 10 ** baseDecimals;
     }
 
     function _convert(address token_) internal view returns (address) {
