@@ -33,6 +33,7 @@ contract ChainlinkOracleImpl is OracleImpl {
     error InvalidPair_FeedNotSet(QuotePair qp);
     error StalePrice(AggregatorV3Interface feed, uint256 timestamp);
     error NegativePrice(AggregatorV3Interface feed, int256 price);
+    error ZeroPrice();
 
     /// -----------------------------------------------------------------------
     /// structs
@@ -222,6 +223,7 @@ contract ChainlinkOracleImpl is OracleImpl {
             }
         }
         if (pd.inverted) price = WAD.divWadDown(price);
+        if (price == 0) revert ZeroPrice();
         return _convertPriceToQuoteAmount(price, quoteParams_);
     }
 
