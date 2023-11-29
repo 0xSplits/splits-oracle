@@ -236,7 +236,7 @@ contract ChainlinkOracleImpl is OracleImpl {
             /* uint80 answeredInRound */
         ) = feed_.feed.latestRoundData();
 
-        if (updatedAt < block.timestamp - feed_.staleAfter) {
+        if (updatedAt + feed_.staleAfter < block.timestamp) {
             revert StalePrice(feed_.feed, updatedAt);
         }
         if (answer < 0) {
