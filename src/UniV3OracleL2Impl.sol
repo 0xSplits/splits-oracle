@@ -29,6 +29,8 @@ contract UniV3OracleL2Impl is OracleImpl {
     error InvalidPair_PoolNotSet();
     error SequencerDown();
     error GracePeriodNotOver();
+    error PoolPeriodNotOver();
+    error InvalidPeriod();
 
     /// -----------------------------------------------------------------------
     /// structs
@@ -112,6 +114,8 @@ contract UniV3OracleL2Impl is OracleImpl {
 
         __initOwnable(params_.owner);
         $paused = params_.paused;
+
+        if (params_.defaultPeriod == 0) revert InvalidPeriod();
         $defaultPeriod = params_.defaultPeriod;
 
         _setPairDetails(params_.pairDetails);
@@ -131,6 +135,7 @@ contract UniV3OracleL2Impl is OracleImpl {
 
     /// set defaultPeriod
     function setDefaultPeriod(uint32 defaultPeriod_) external onlyOwner {
+        if (defaultPeriod_ == 0) revert InvalidPeriod();
         $defaultPeriod = defaultPeriod_;
         emit SetDefaultPeriod(defaultPeriod_);
     }
@@ -169,8 +174,8 @@ contract UniV3OracleL2Impl is OracleImpl {
         pausable
         returns (uint256[] memory quoteAmounts)
     {
-        _checkSequencerFeed();
-        return _getQuoteAmounts(quoteParams_);
+        uint256 startedAt = _checkSequencerFeed();
+        return _getQuoteAmounts(quoteParams_, startedAt);
     }
 
     /// -----------------------------------------------------------------------
@@ -186,7 +191,7 @@ contract UniV3OracleL2Impl is OracleImpl {
     /// functions - private & internal - views
     /// -----------------------------------------------------------------------
 
-    function _getQuoteAmounts(QuoteParams[] calldata quoteParams_)
+    function _getQuoteAmounts(QuoteParams[] calldata quoteParams_, uint256 startedAt_)
         internal
         view
         returns (uint256[] memory quoteAmounts)
@@ -194,7 +199,7 @@ contract UniV3OracleL2Impl is OracleImpl {
         uint256 length = quoteParams_.length;
         quoteAmounts = new uint256[](length);
         for (uint256 i; i < length;) {
-            quoteAmounts[i] = _getQuoteAmount(quoteParams_[i]);
+            quoteAmounts[i] = _getQuoteAmount(quoteParams_[i], startedAt_);
             unchecked {
                 ++i;
             }
@@ -202,7 +207,7 @@ contract UniV3OracleL2Impl is OracleImpl {
     }
 
     /// get amount for a quote
-    function _getQuoteAmount(QuoteParams calldata quoteParams_) internal view returns (uint256) {
+    function _getQuoteAmount(QuoteParams calldata quoteParams_, uint256 startedAt_) internal view returns (uint256) {
         ConvertedQuotePair memory cqp = quoteParams_.quotePair._convert(_convert);
 
         // skip oracle if converted tokens are equal
@@ -216,6 +221,10 @@ contract UniV3OracleL2Impl is OracleImpl {
         }
         if (po.period == 0) {
             po.period = $defaultPeriod;
+        }
+
+        if (block.timestamp - startedAt_ <= po.period) {
+            revert PoolPeriodNotOver();
         }
 
         // reverts if period is zero or > oldest observation
@@ -234,7 +243,7 @@ contract UniV3OracleL2Impl is OracleImpl {
         return token_._isETH() ? weth9 : token_;
     }
 
-    function _checkSequencerFeed() private view {
+    function _checkSequencerFeed() private view returns (uint256) {
         (, /* uint80 roundId, */ int256 answer, uint256 startedAt,, /*uint256 updatedAt*/ /*uint80 answeredInRound*/ ) =
             sequencerFeed.latestRoundData();
 
@@ -247,5 +256,7 @@ contract UniV3OracleL2Impl is OracleImpl {
         if (block.timestamp - startedAt <= GRACE_PERIOD_TIME) {
             revert GracePeriodNotOver();
         }
+
+        return startedAt;
     }
 }

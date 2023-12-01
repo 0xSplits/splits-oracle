@@ -134,6 +134,11 @@ contract Initialized_UniV3OracleL2ImplTest is Initialized_PausableImplTest, Init
         $oracle.setDefaultPeriod(nextDefaultPeriod_);
     }
 
+    function testFork_revert_InvalidPeriod_setDefaultPeriod() public callerOwner {
+        vm.expectRevert(UniV3OracleL2Impl.InvalidPeriod.selector);
+        $oracle.setDefaultPeriod(0);
+    }
+
     function testFork_setDefaultPeriod_setsDefaultPeriod() public callerOwner {
         $oracle.setDefaultPeriod($nextDefaultPeriod);
         assertEq($oracle.defaultPeriod(), $nextDefaultPeriod);
@@ -342,5 +347,18 @@ contract Unpaused_Initialized_UniV3OracleL2ImplTest is
 
         vm.expectRevert(abi.encodeWithSelector(UniV3OracleL2Impl.GracePeriodNotOver.selector));
         $oracle.getQuoteAmounts(quoteParams_);
+    }
+
+    function testFork_revertWhen_poolPeriodNotOver() public unpaused {
+        vm.mockCall(
+            SEQUENCER_FEED,
+            abi.encodeWithSelector(AggregatorV3Interface.latestRoundData.selector),
+            abi.encode(0, 0, block.timestamp - 75 minutes, 0, 0)
+        );
+
+        testForkFuzz_setDefaultPeriod_setsDefaultPeriod(120 minutes);
+
+        vm.expectRevert(abi.encodeWithSelector(UniV3OracleL2Impl.PoolPeriodNotOver.selector));
+        $oracle.getQuoteAmounts($usdcQuoteParams);
     }
 }
