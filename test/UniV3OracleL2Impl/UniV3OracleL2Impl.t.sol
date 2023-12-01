@@ -134,11 +134,6 @@ contract Initialized_UniV3OracleL2ImplTest is Initialized_PausableImplTest, Init
         $oracle.setDefaultPeriod(nextDefaultPeriod_);
     }
 
-    function testFork_revert_InvalidPeriod_setDefaultPeriod() public callerOwner {
-        vm.expectRevert(UniV3OracleL2Impl.InvalidPeriod.selector);
-        $oracle.setDefaultPeriod(0);
-    }
-
     function testFork_setDefaultPeriod_setsDefaultPeriod() public callerOwner {
         $oracle.setDefaultPeriod($nextDefaultPeriod);
         assertEq($oracle.defaultPeriod(), $nextDefaultPeriod);
