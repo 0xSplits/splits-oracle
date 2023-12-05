@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 
 import {QuotePair} from "splits-utils/LibQuotes.sol";
 import {AggregatorV3Interface} from "chainlink/interfaces/AggregatorV3Interface.sol";
-import {CreateDefaultOracleBaseScript} from "./02_CreateDefaultChainlinkOracle.base.s.sol";
+import {CreateDefaultOracleBaseScript} from "./02_CreateDefaultChainlinkOracleL2.base.s.sol";
 import {ChainlinkOracleImpl} from "../src/chainlink/oracle/ChainlinkOracleImpl.sol";
 import {ChainlinkPath} from "../src/libraries/ChainlinkPath.sol";
 

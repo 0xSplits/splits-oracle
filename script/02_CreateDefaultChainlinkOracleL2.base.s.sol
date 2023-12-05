@@ -7,7 +7,8 @@ import "forge-std/interfaces/IERC20.sol";
 
 import {QuotePair, QuoteParams} from "splits-utils/LibQuotes.sol";
 
-import {ChainlinkOracleFactory} from "../src/chainlink/factory/ChainlinkOracleFactory.sol";
+import {ChainlinkOracleL2Factory} from "../src/chainlink/factory/ChainlinkOracleL2Factory.sol";
+import {ChainlinkOracleL2Impl} from "../src/chainlink/oracle/ChainlinkOracleL2Impl.sol";
 import {ChainlinkOracleImpl} from "../src/chainlink/oracle/ChainlinkOracleImpl.sol";
 import {ChainlinkPath} from "../src/libraries/ChainlinkPath.sol";
 
@@ -15,20 +16,24 @@ contract CreateDefaultOracleBaseScript is Script {
     using stdJson for string;
     using ChainlinkPath for ChainlinkOracleImpl.Feed[];
 
+    address $sequencerFeed;
     address $weth9;
 
-    ChainlinkOracleFactory $chainlinkOracleFactory;
+    ChainlinkOracleL2Factory $chainlinkOracleFactory;
 
     address $owner;
     bool $paused;
 
     ChainlinkOracleImpl.SetPairDetailParams[] $pairDetails;
 
-    function run() public returns (ChainlinkOracleImpl defaultOracle, ChainlinkOracleFactory chainlinkOracleFactory) {
-        chainlinkOracleFactory = new ChainlinkOracleFactory($weth9);
+    function run()
+        public
+        returns (ChainlinkOracleL2Impl defaultOracle, ChainlinkOracleL2Factory chainlinkOracleFactory)
+    {
+        chainlinkOracleFactory = new ChainlinkOracleL2Factory($weth9, $sequencerFeed);
         ChainlinkOracleImpl.InitParams memory params = getInitialParams();
         bytes32 salt;
-        defaultOracle = ChainlinkOracleImpl(chainlinkOracleFactory.createOracle(abi.encode(params), salt));
+        defaultOracle = ChainlinkOracleL2Impl(chainlinkOracleFactory.createOracle(abi.encode(params), salt));
         verifyPairDetails(defaultOracle, params);
     }
 
@@ -36,7 +41,7 @@ contract CreateDefaultOracleBaseScript is Script {
         params = ChainlinkOracleImpl.InitParams({owner: $owner, paused: $paused, pairDetails: $pairDetails});
     }
 
-    function verifyPairDetails(ChainlinkOracleImpl oracle, ChainlinkOracleImpl.InitParams memory params_)
+    function verifyPairDetails(ChainlinkOracleL2Impl oracle, ChainlinkOracleImpl.InitParams memory params_)
         internal
         view
     {
@@ -63,9 +68,9 @@ contract CreateDefaultOracleBaseScript is Script {
         }
     }
 
-    function getFactory() public returns (ChainlinkOracleFactory) {
+    function getFactory() public returns (ChainlinkOracleL2Factory) {
         string memory json = readInput("inputs");
-        return ChainlinkOracleFactory(json.readAddress(".chainlinkOracleFactory"));
+        return ChainlinkOracleL2Factory(json.readAddress(".chainlinkOracleFactory"));
     }
 
     function readJson(string memory input) internal view returns (bytes memory) {
