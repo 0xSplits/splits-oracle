@@ -77,6 +77,13 @@ contract CreateDefaultChainlinkOracleOptimismScript is CreateDefaultOracleBaseSc
      * 18: WBTC/OP
      * 19: WBTC/WSTETH
      * 20: OP/WSTETH
+     * 21: USDCE/USDC
+     * 22: USDCE/USDT
+     * 23: USDCE/DAI
+     * 24: USDCE/WETH
+     * 25: USDCE/WBTC
+     * 26: USDCE/OP
+     * 27: USDCE/WSTETH
      */
 
     function setUp() public {
@@ -522,6 +529,153 @@ contract CreateDefaultChainlinkOracleOptimismScript is CreateDefaultOracleBaseSc
             ChainlinkOracleImpl.SetPairDetailParams({
                 quotePair: QuotePair({base: OP, quote: WSTETH}),
                 pairDetail: ChainlinkOracleImpl.PairDetail({path: opWstethFeeds.getPath(), inverted: false})
+            })
+        );
+
+        // USDCE/USDC
+        ChainlinkOracleImpl.Feed[] memory usdceUsdcFeeds = new ChainlinkOracleImpl.Feed[](2);
+        usdceUsdcFeeds[0] = ChainlinkOracleImpl.Feed({
+            feed: USDC_USD_FEED,
+            decimals: USDC_USD_DECIMALS,
+            staleAfter: USDC_USD_STALEAFTER,
+            mul: true
+        });
+        usdceUsdcFeeds[1] = ChainlinkOracleImpl.Feed({
+            feed: USDC_USD_FEED,
+            decimals: USDC_USD_DECIMALS,
+            staleAfter: USDC_USD_STALEAFTER,
+            mul: false
+        });
+        $pairDetails.push(
+            ChainlinkOracleImpl.SetPairDetailParams({
+                quotePair: QuotePair({base: USDCE, quote: USDC}),
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdceUsdcFeeds.getPath(), inverted: false})
+            })
+        );
+
+        // USDCE/USDT
+        ChainlinkOracleImpl.Feed[] memory usdceUsdtFeeds = new ChainlinkOracleImpl.Feed[](2);
+        usdceUsdtFeeds[0] = ChainlinkOracleImpl.Feed({
+            feed: USDC_USD_FEED,
+            decimals: USDC_USD_DECIMALS,
+            staleAfter: USDC_USD_STALEAFTER,
+            mul: true
+        });
+        usdceUsdtFeeds[1] = ChainlinkOracleImpl.Feed({
+            feed: USDT_USD_FEED,
+            decimals: USDT_USD_DECIMALS,
+            staleAfter: USDT_USD_STALEAFTER,
+            mul: false
+        });
+        $pairDetails.push(
+            ChainlinkOracleImpl.SetPairDetailParams({
+                quotePair: QuotePair({base: USDCE, quote: USDT}),
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdceUsdtFeeds.getPath(), inverted: false})
+            })
+        );
+
+        // USDCE/DAI
+        ChainlinkOracleImpl.Feed[] memory usdceDaiFeeds = new ChainlinkOracleImpl.Feed[](2);
+        usdceDaiFeeds[0] = ChainlinkOracleImpl.Feed({
+            feed: USDC_USD_FEED,
+            decimals: USDC_USD_DECIMALS,
+            staleAfter: USDC_USD_STALEAFTER,
+            mul: true
+        });
+        usdceDaiFeeds[1] = ChainlinkOracleImpl.Feed({
+            feed: DAI_USD_FEED,
+            decimals: DAI_USD_DECIMALS,
+            staleAfter: DAI_USD_STALEAFTER,
+            mul: false
+        });
+        $pairDetails.push(
+            ChainlinkOracleImpl.SetPairDetailParams({
+                quotePair: QuotePair({base: USDCE, quote: DAI}),
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdceDaiFeeds.getPath(), inverted: false})
+            })
+        );
+
+        // USDCE/WETH
+        ChainlinkOracleImpl.Feed[] memory usdceWethFeeds = new ChainlinkOracleImpl.Feed[](2);
+        usdceWethFeeds[0] = ChainlinkOracleImpl.Feed({
+            feed: USDC_USD_FEED,
+            decimals: USDC_USD_DECIMALS,
+            staleAfter: USDC_USD_STALEAFTER,
+            mul: true
+        });
+        usdceWethFeeds[1] = ChainlinkOracleImpl.Feed({
+            feed: ETH_USD_FEED,
+            decimals: ETH_USD_DECIMALS,
+            staleAfter: ETH_USD_STALEAFTER,
+            mul: false
+        });
+        $pairDetails.push(
+            ChainlinkOracleImpl.SetPairDetailParams({
+                quotePair: QuotePair({base: USDCE, quote: WETH9}),
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdceWethFeeds.getPath(), inverted: false})
+            })
+        );
+
+        // USDCE/WBTC
+        ChainlinkOracleImpl.Feed[] memory usdceWbtcFeeds = new ChainlinkOracleImpl.Feed[](2);
+        usdceWbtcFeeds[0] = ChainlinkOracleImpl.Feed({
+            feed: USDC_USD_FEED,
+            decimals: USDC_USD_DECIMALS,
+            staleAfter: USDC_USD_STALEAFTER,
+            mul: true
+        });
+        usdceWbtcFeeds[1] = ChainlinkOracleImpl.Feed({
+            feed: WBTC_USD_FEED,
+            decimals: WBTC_USD_DECIMALS,
+            staleAfter: WBTC_USD_STALEAFTER,
+            mul: false
+        });
+        $pairDetails.push(
+            ChainlinkOracleImpl.SetPairDetailParams({
+                quotePair: QuotePair({base: USDCE, quote: WBTC}),
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdceWbtcFeeds.getPath(), inverted: false})
+            })
+        );
+
+        // USDCE/OP
+        ChainlinkOracleImpl.Feed[] memory usdceOpFeeds = new ChainlinkOracleImpl.Feed[](2);
+        usdceOpFeeds[0] = ChainlinkOracleImpl.Feed({
+            feed: USDC_USD_FEED,
+            decimals: USDC_USD_DECIMALS,
+            staleAfter: USDC_USD_STALEAFTER,
+            mul: true
+        });
+        usdceOpFeeds[1] = ChainlinkOracleImpl.Feed({
+            feed: OP_USD_FEED,
+            decimals: OP_USD_DECIMALS,
+            staleAfter: OP_USD_STALEAFTER,
+            mul: false
+        });
+        $pairDetails.push(
+            ChainlinkOracleImpl.SetPairDetailParams({
+                quotePair: QuotePair({base: USDCE, quote: OP}),
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdceOpFeeds.getPath(), inverted: false})
+            })
+        );
+
+        // USDCE/WSTETH
+        ChainlinkOracleImpl.Feed[] memory usdceWstethFeeds = new ChainlinkOracleImpl.Feed[](2);
+        usdceWstethFeeds[0] = ChainlinkOracleImpl.Feed({
+            feed: USDC_USD_FEED,
+            decimals: USDC_USD_DECIMALS,
+            staleAfter: USDC_USD_STALEAFTER,
+            mul: true
+        });
+        usdceWstethFeeds[1] = ChainlinkOracleImpl.Feed({
+            feed: WSTETH_USD_FEED,
+            decimals: WSTETH_USD_DECIMALS,
+            staleAfter: WSTETH_USD_STALEAFTER,
+            mul: false
+        });
+        $pairDetails.push(
+            ChainlinkOracleImpl.SetPairDetailParams({
+                quotePair: QuotePair({base: USDCE, quote: WSTETH}),
+                pairDetail: ChainlinkOracleImpl.PairDetail({path: usdceWstethFeeds.getPath(), inverted: false})
             })
         );
     }
