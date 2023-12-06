@@ -21,10 +21,7 @@ offline = false
 optimizer = true
 optimizer_runs = 1_000_000
 verbosity = 0
-ignored_error_codes = [
-    'license',
-    'code-size',
-]
+ignored_error_codes = ['license', 'code-size']
 deny_warnings = false
 build_info = false
 ffi = false
@@ -50,8 +47,8 @@ cbor_metadata = true
 sparse_mode = false
 
 fs_permissions = [
-    { access = "read", path = "./script/input/"},
-    { access = "read-write", path = "./deployments/"}
+    { access = "read", path = "./script/input/" },
+    { access = "read-write", path = "./deployments/" },
 ]
 
 [profile.default.rpc_storage_caching]
@@ -94,3 +91,4 @@ include_push_bytes = true
 
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC_URL}"
+arbitrum = "${ARBITRUM_RPC_URL}"

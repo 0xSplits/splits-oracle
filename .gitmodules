@@ -18,3 +18,6 @@
 [submodule "lib/splits-utils"]
 	path = lib/splits-utils
 	url = https://github.com/0xsplits/splits-utils
+[submodule "lib/chainlink"]
+	path = lib/chainlink
+	url = https://github.com/smartcontractkit/chainlink
