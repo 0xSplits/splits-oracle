@@ -57,8 +57,16 @@ contract CreateDefaultOracleBaseScript is Script {
         uint256[] memory quoteAmounts = oracle.getQuoteAmounts(quoteParams);
 
         for (uint256 i = 0; i < quoteAmounts.length; i++) {
-            console.log("Base: ", IERC20(quotePairs[i].base).symbol());
-            console.log("Quote: ", IERC20(quotePairs[i].quote).symbol());
+            if (quotePairs[i].base == 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2) {
+                console.log("Base: ", "MKR");
+            } else {
+                console.log("Base: ", IERC20(quotePairs[i].base).symbol());
+            }
+            if (quotePairs[i].quote == 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2) {
+                console.log("Quote: ", "MKR");
+            } else {
+                console.log("Quote: ", IERC20(quotePairs[i].quote).symbol());
+            }
             console.log("Amount: ", quoteAmounts[i]);
         }
     }
