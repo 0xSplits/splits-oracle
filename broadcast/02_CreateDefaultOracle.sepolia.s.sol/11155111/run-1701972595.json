@@ -1,0 +1,45 @@
+{
+  "transactions": [
+    {
+      "hash": "0x138005d0c73cbb58a9a3b42d2ecc9a5e838e65e1d8144d0a930733bf4cdb119b",
+      "transactionType": "CALL",
+      "contractName": null,
+      "contractAddress": "0x074827E8bD77B0A66c6008a51AF9BD1F33105caf",
+      "function": null,
+      "arguments": null,
+      "transaction": {
+        "type": "0x02",
+        "from": "0x8cc55811d2610ece1997658bef35b290e55c9186",
+        "to": "0x074827e8bd77b0a66c6008a51af9bd1f33105caf",
+        "gas": "0x2be76",
+        "value": "0x0",
+        "data": "0xdd3ff6e0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000070800000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000fff9976782d46cc05630d1f6ebab18b2324d6b1400000000000000000000000094a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8000000000000000000000000ba57efa18073647e5269db04ff70b8e26fd0beaf0000000000000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x2",
+        "accessList": []
+      },
+      "additionalContracts": [
+        {
+          "transactionType": "CREATE",
+          "address": "0x6B99b2E868B6E3B8b259E296c4c6aBffbB1AaB94",
+          "initCode": "0x602c3d8160093d39f33d3d3d3d363d3d37363d73280064ab5f49f9f61ba9ed03a244773230bee1955af43d3d93803e602a57fd5bf3"
+        }
+      ],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0x138005d0c73cbb58a9a3b42d2ecc9a5e838e65e1d8144d0a930733bf4cdb119b"
+  ],
+  "returns": {
+    "defaultOracle": {
+      "internal_type": "contract UniV3OracleImpl",
+      "value": "0x6B99b2E868B6E3B8b259E296c4c6aBffbB1AaB94"
+    }
+  },
+  "timestamp": 1701972595,
+  "chain": 11155111,
+  "multi": false,
+  "commit": "ba8a982"
+}
