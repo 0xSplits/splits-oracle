@@ -4,7 +4,8 @@ pragma solidity ^0.8.17;
 import "forge-std/Script.sol";
 import "forge-std/console.sol";
 
-import {ChainlinkOracleL2Factory} from "../src/chainlink/factory/ChainlinkOracleL2Factory.sol";
+import {ChainlinkOracleFactory} from "../src/chainlink/factory/ChainlinkOracleFactory.sol";
+import {CREATE3} from "solady/utils/CREATE3.sol";
 
 contract ChainlinkOracleFactoryScript is Script {
     using stdJson for string;
@@ -12,16 +13,20 @@ contract ChainlinkOracleFactoryScript is Script {
     address weth9;
     address sequencerFeed;
 
-    function run() public virtual returns (ChainlinkOracleL2Factory uof) {
+    function run() public virtual returns (ChainlinkOracleFactory uof) {
         string memory json = readInput("inputs");
 
         weth9 = json.readAddress(".weth9");
-        sequencerFeed = json.readAddress(".sequencerFeed");
 
         uint256 privKey = vm.envUint("PRIVATE_KEY");
+        bytes memory creationCode = type(ChainlinkOracleFactory).creationCode;
         vm.startBroadcast(privKey);
 
-        uof = new ChainlinkOracleL2Factory({weth9_: weth9, sequencerFeed_: sequencerFeed});
+        uof = ChainlinkOracleFactory(
+            CREATE3.deploy(
+                keccak256("0xSplits.chainlink-oracle-factory.v1"), abi.encodePacked(creationCode, abi.encode(weth9)), 0
+            )
+        );
 
         vm.stopBroadcast();
 
