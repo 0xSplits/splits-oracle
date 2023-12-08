@@ -10,23 +10,17 @@ import {CREATE3} from "solady/utils/CREATE3.sol";
 contract ChainlinkOracleFactoryScript is Script {
     using stdJson for string;
 
-    address weth9;
-    address sequencerFeed;
+    address $weth9;
 
     function run() public virtual returns (ChainlinkOracleFactory uof) {
         string memory json = readInput("inputs");
 
-        weth9 = json.readAddress(".weth9");
+        $weth9 = json.readAddress(".weth9");
 
         uint256 privKey = vm.envUint("PRIVATE_KEY");
-        bytes memory creationCode = type(ChainlinkOracleFactory).creationCode;
         vm.startBroadcast(privKey);
 
-        uof = ChainlinkOracleFactory(
-            CREATE3.deploy(
-                keccak256("0xSplits.chainlink-oracle-factory.v1"), abi.encodePacked(creationCode, abi.encode(weth9)), 0
-            )
-        );
+        uof = new ChainlinkOracleFactory($weth9);
 
         vm.stopBroadcast();
 
