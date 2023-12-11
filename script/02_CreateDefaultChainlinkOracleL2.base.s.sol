@@ -26,14 +26,19 @@ contract CreateDefaultOracleBaseScript is Script {
 
     ChainlinkOracleImpl.SetPairDetailParams[] $pairDetails;
 
-    function run()
-        public
-        returns (ChainlinkOracleL2Impl defaultOracle, ChainlinkOracleL2Factory chainlinkOracleFactory)
-    {
-        chainlinkOracleFactory = new ChainlinkOracleL2Factory($weth9, $sequencerFeed);
+    function run() public returns (ChainlinkOracleL2Impl defaultOracle) {
+        string memory json = readInput("inputs");
+
+        uint256 privKey = vm.envUint("PRIVATE_KEY");
+
+        $chainlinkOracleFactory = ChainlinkOracleL2Factory(json.readAddress(".ChainlinkOracleFactory"));
         ChainlinkOracleImpl.InitParams memory params = getInitialParams();
         bytes32 salt;
-        defaultOracle = ChainlinkOracleL2Impl(chainlinkOracleFactory.createOracle(abi.encode(params), salt));
+
+        vm.startBroadcast(privKey);
+        defaultOracle = ChainlinkOracleL2Impl($chainlinkOracleFactory.createOracle(abi.encode(params), salt));
+        vm.stopBroadcast();
+
         verifyPairDetails(defaultOracle, params);
     }
 

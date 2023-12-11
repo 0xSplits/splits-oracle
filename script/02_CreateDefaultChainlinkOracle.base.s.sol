@@ -25,9 +25,11 @@ contract CreateDefaultOracleBaseScript is Script {
     ChainlinkOracleImpl.SetPairDetailParams[] $pairDetails;
 
     function run() public returns (ChainlinkOracleImpl defaultOracle) {
+        string memory json = readInput("inputs");
+
         uint256 privKey = vm.envUint("PRIVATE_KEY");
 
-        $chainlinkOracleFactory = ChainlinkOracleFactory(0xD28182C2E11519ad081E7fa9da711274b7096098);
+        $chainlinkOracleFactory = ChainlinkOracleFactory(json.readAddress(".ChainlinkOracleFactory"));
         ChainlinkOracleImpl.InitParams memory params = getInitialParams();
         bytes32 salt;
 
