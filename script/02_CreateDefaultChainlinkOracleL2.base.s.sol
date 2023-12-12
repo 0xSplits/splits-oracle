@@ -31,7 +31,7 @@ contract CreateDefaultOracleBaseScript is Script {
 
         uint256 privKey = vm.envUint("PRIVATE_KEY");
 
-        $chainlinkOracleFactory = ChainlinkOracleL2Factory(json.readAddress(".ChainlinkOracleFactory"));
+        $chainlinkOracleFactory = ChainlinkOracleL2Factory(json.readAddress(".chainlinkOracleFactory"));
         ChainlinkOracleImpl.InitParams memory params = getInitialParams();
         bytes32 salt;
 
