@@ -28,6 +28,11 @@ contract CreateDefaultOracleBaseScript is Script {
     uint32 $defaultPeriod;
     PairDetail[] $pairDetails;
 
+    uint24 constant POINT_ZERO_ONE_PERCENT = 100;
+    uint24 constant POINT_ZERO_FIVE_PERCENT = 500;
+    uint24 constant POINT_THREE_PERCENT = 3000;
+    uint24 constant ONE_PERCENT = 10000;
+
     function run() public returns (UniV3OracleImpl defaultOracle) {
         uint256 numPairs = $pairDetails.length;
         UniV3OracleImpl.SetPairDetailParams[] memory pairDetails = new UniV3OracleImpl.SetPairDetailParams[](numPairs);
