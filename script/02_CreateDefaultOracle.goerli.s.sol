@@ -15,9 +15,6 @@ contract CreateDefaultOracleGoerliScript is CreateDefaultOracleBaseScript {
     address constant UNI = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
 
     function setUp() public {
-        $uniswapV3Factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
-        $uniV3OracleFactory = address(0x498f316fEB85a250fdC64B859a130515491EC888);
-
         $owner = address(0x0);
         $paused = false;
         $defaultPeriod = 30 minutes;

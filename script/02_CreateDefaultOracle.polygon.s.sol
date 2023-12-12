@@ -20,9 +20,6 @@ contract CreateDefaultOraclePolygonScript is CreateDefaultOracleBaseScript {
     address constant GNS = 0xE5417Af564e4bFDA1c483642db72007871397896;
 
     function setUp() public {
-        $uniswapV3Factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
-        $uniV3OracleFactory = address(0x498f316fEB85a250fdC64B859a130515491EC888); // need to setup
-
         $owner = address(0x0);
         $paused = false;
         $defaultPeriod = 30 minutes;

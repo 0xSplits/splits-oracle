@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import "forge-std/Script.sol";
 import "forge-std/console.sol";
 
-import {CreateDefaultOracleBaseScript} from "./02_CreateDefaultOracle.base.s.sol";
+import {CreateDefaultOracleBaseScript} from "./02_CreateDefaultOracleL2.base.s.sol";
 
 contract CreateDefaultOracleCoinbaseScript is CreateDefaultOracleBaseScript {
     using stdJson for string;
@@ -13,9 +13,6 @@ contract CreateDefaultOracleCoinbaseScript is CreateDefaultOracleBaseScript {
     address constant USDC = 0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
 
     function setUp() public {
-        $uniswapV3Factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
-        $uniV3OracleFactory = address(0x498f316fEB85a250fdC64B859a130515491EC888); // need to deploy
-
         $owner = address(0x0);
         $paused = false;
         $defaultPeriod = 30 minutes;

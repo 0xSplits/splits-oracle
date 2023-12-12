@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import "forge-std/Script.sol";
 import "forge-std/console.sol";
 
-import {CreateDefaultOracleBaseScript} from "./02_CreateDefaultOracle.base.s.sol";
+import {CreateDefaultOracleBaseScript} from "./02_CreateDefaultOracleL2.base.s.sol";
 
 contract CreateDefaultOracleArbitrumScript is CreateDefaultOracleBaseScript {
     using stdJson for string;
@@ -24,9 +24,6 @@ contract CreateDefaultOracleArbitrumScript is CreateDefaultOracleBaseScript {
     address constant UNI = 0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0;
 
     function setUp() public {
-        $uniswapV3Factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
-        $uniV3OracleFactory = address(0x498f316fEB85a250fdC64B859a130515491EC888); // need to setup
-
         $owner = address(0x0);
         $paused = false;
         $defaultPeriod = 30 minutes;
