@@ -10,7 +10,7 @@ contract CreateDefaultOraclePolygonScript is CreateDefaultOracleBaseScript {
     using stdJson for string;
 
     address constant WETH9 = 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619;
-    address constant USDC = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
+    address constant USDCE = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
     address constant WMATIC = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
     address constant WBTC = 0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6;
     address constant USDT = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
@@ -25,29 +25,24 @@ contract CreateDefaultOraclePolygonScript is CreateDefaultOracleBaseScript {
         $defaultPeriod = 30 minutes;
 
         $pairDetails.push(
+            PairDetail({tokenA: WETH9, tokenB: USDCE, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
+        );
+        $pairDetails.push(
             PairDetail({tokenA: WETH9, tokenB: WBTC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
         );
+        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: WMATIC, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
         $pairDetails.push(
-            PairDetail({tokenA: WETH9, tokenB: USDC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
+            PairDetail({tokenA: USDCE, tokenB: WMATIC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
         );
         $pairDetails.push(
-            PairDetail({tokenA: WETH9, tokenB: WMATIC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
+            PairDetail({tokenA: LINK, tokenB: WMATIC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
         );
-        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: LINK, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: AAVE, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(
-            PairDetail({tokenA: USDC, tokenB: WMATIC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
-        );
-        $pairDetails.push(PairDetail({tokenA: USDC, tokenB: USDT, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: USDC, tokenB: WBTC, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: USDC, tokenB: LINK, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: USDC, tokenB: DAI, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
+        $pairDetails.push(PairDetail({tokenA: USDCE, tokenB: USDT, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
         $pairDetails.push(
             PairDetail({tokenA: USDT, tokenB: WMATIC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
         );
-        $pairDetails.push(PairDetail({tokenA: LINK, tokenB: WMATIC, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: AAVE, tokenB: WMATIC, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: GNS, tokenB: WMATIC, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: AAVE, tokenB: WETH9, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
+        $pairDetails.push(PairDetail({tokenA: USDCE, tokenB: LINK, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
+        $pairDetails.push(PairDetail({tokenA: USDCE, tokenB: WBTC, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
+        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: LINK, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
     }
 }
