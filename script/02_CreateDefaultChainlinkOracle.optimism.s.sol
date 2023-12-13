@@ -87,9 +87,6 @@ contract CreateDefaultChainlinkOracleOptimismScript is CreateDefaultOracleBaseSc
      */
 
     function setUp() public {
-        $sequencerFeed = 0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389;
-        $weth9 = WETH9;
-
         $owner = address(0);
         $paused = false;
 
@@ -454,7 +451,7 @@ contract CreateDefaultChainlinkOracleOptimismScript is CreateDefaultOracleBaseSc
             })
         );
 
-        // WETH/WSTETH
+        // WSTETH/WETH
         ChainlinkOracleImpl.Feed[] memory wstethWETHFeeds = new ChainlinkOracleImpl.Feed[](1);
         wstethWETHFeeds[0] = ChainlinkOracleImpl.Feed({
             feed: WSTETH_ETH_FEED,
