@@ -23,22 +23,19 @@ contract CreateDefaultOracleOptimismScript is CreateDefaultOracleBaseScript {
         $defaultPeriod = 30 minutes;
 
         $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: OP, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
+
         $pairDetails.push(
             PairDetail({tokenA: WETH9, tokenB: USDC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
         );
-        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: WBTC, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: USDC, tokenB: OP, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: DAI, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(
-            PairDetail({tokenA: WETH9, tokenB: USDT, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
-        );
-        $pairDetails.push(PairDetail({tokenA: USDC, tokenB: USDT, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: USDC, tokenB: DAI, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
+
         $pairDetails.push(
             PairDetail({tokenA: WETH9, tokenB: WSTETH, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)})
         );
-        $pairDetails.push(
-            PairDetail({tokenA: USDC, tokenB: WSTETH, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
-        );
+
+        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: WBTC, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
+
+        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: DAI, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
+
+        $pairDetails.push(PairDetail({tokenA: USDC, tokenB: OP, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
     }
 }
