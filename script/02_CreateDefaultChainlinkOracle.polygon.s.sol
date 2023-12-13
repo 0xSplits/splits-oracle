@@ -21,7 +21,7 @@ contract CreateDefaultChainlinkOraclePolygonScript is CreateDefaultOracleBaseScr
     address constant WETH = 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619;
 
     AggregatorV3Interface constant DAI_USD_FEED = AggregatorV3Interface(0x4746DeC9e833A82EC7C2C1356372CcF2cfcD2F3D);
-    uint24 constant DAI_USD_STALEAFTER = 1 days;
+    uint24 constant DAI_USD_STALEAFTER = 27;
     uint8 constant DAI_USD_DECIMALS = 8;
 
     AggregatorV3Interface constant DAI_ETH_FEED = AggregatorV3Interface(0xFC539A559e170f848323e19dfD66007520510085);
@@ -29,7 +29,7 @@ contract CreateDefaultChainlinkOraclePolygonScript is CreateDefaultOracleBaseScr
     uint8 constant DAI_ETH_DECIMALS = 18;
 
     AggregatorV3Interface constant ETH_USD_FEED = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);
-    uint24 constant ETH_USD_STALEAFTER = 1200;
+    uint24 constant ETH_USD_STALEAFTER = 27;
     uint8 constant ETH_USD_DECIMALS = 8;
 
     AggregatorV3Interface constant MATIC_USD_FEED = AggregatorV3Interface(0xAB594600376Ec9fD91F8e885dADF0CE036862dE0);
@@ -41,7 +41,7 @@ contract CreateDefaultChainlinkOraclePolygonScript is CreateDefaultOracleBaseScr
     uint8 constant MATIC_ETH_DECIMALS = 18;
 
     AggregatorV3Interface constant USDC_USD_FEED = AggregatorV3Interface(0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7);
-    uint24 constant USDC_USD_STALEAFTER = 1 days;
+    uint24 constant USDC_USD_STALEAFTER = 27;
     uint8 constant USDC_USD_DECIMALS = 8;
 
     AggregatorV3Interface constant USDC_ETH_FEED = AggregatorV3Interface(0xefb7e6be8356cCc6827799B6A7348eE674A80EaE);
@@ -49,18 +49,18 @@ contract CreateDefaultChainlinkOraclePolygonScript is CreateDefaultOracleBaseScr
     uint8 constant USDC_ETH_DECIMALS = 18;
 
     AggregatorV3Interface constant USDT_USD_FEED = AggregatorV3Interface(0x0A6513e40db6EB1b165753AD52E80663aeA50545);
-    uint24 constant USDT_USD_STALEAFTER = 1 days;
+    uint24 constant USDT_USD_STALEAFTER = 27;
     uint8 constant USDT_USD_DECIMALS = 8;
 
     AggregatorV3Interface constant USDT_ETH_FEED = AggregatorV3Interface(0xf9d5AAC6E5572AEFa6bd64108ff86a222F69B64d);
     uint24 constant USDT_ETH_STALEAFTER = 1 days;
     uint8 constant USDT_ETH_DECIMALS = 18;
 
-    AggregatorV3Interface constant WBTC_USD_FEED = AggregatorV3Interface(0xDE31F8bFBD8c84b5360CFACCa3539B938dd78ae6);
-    uint24 constant WBTC_USD_STALEAFTER = 300;
+    AggregatorV3Interface constant WBTC_USD_FEED = AggregatorV3Interface(0xc907E116054Ad103354f2D350FD2514433D57F6f);
+    uint24 constant WBTC_USD_STALEAFTER = 27;
     uint8 constant WBTC_USD_DECIMALS = 8;
 
-    AggregatorV3Interface constant WBTC_ETH_FEED = AggregatorV3Interface(0xA338e0492B2F944E9F8C0653D3AD1484f2657a37);
+    AggregatorV3Interface constant WBTC_ETH_FEED = AggregatorV3Interface(0x19b0F0833C78c0848109E3842D34d2fDF2cA69BA);
     uint24 constant WBTC_ETH_STALEAFTER = 1 days;
     uint8 constant WBTC_ETH_DECIMALS = 18;
 
@@ -84,8 +84,6 @@ contract CreateDefaultChainlinkOraclePolygonScript is CreateDefaultOracleBaseScr
      */
 
     function setUp() public {
-        $weth9 = WMATIC;
-
         $owner = address(0);
         $paused = false;
 
