@@ -25,9 +25,6 @@ contract CreateDefaultOracleMainnetScript is CreateDefaultOracleBaseScript {
     address constant sETH2 = 0xFe2e637202056d30016725477c5da089Ab0A043A;
 
     function setUp() public {
-        $uniswapV3Factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
-        $uniV3OracleFactory = address(0x498f316fEB85a250fdC64B859a130515491EC888);
-
         $owner = address(0x0);
         $paused = false;
         $defaultPeriod = 30 minutes;

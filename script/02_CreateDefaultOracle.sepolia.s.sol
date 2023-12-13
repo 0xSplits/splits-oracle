@@ -13,9 +13,6 @@ contract CreateDefaultOracleSepoliaScript is CreateDefaultOracleBaseScript {
     address constant USDC = 0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8;
 
     function setUp() public {
-        $uniswapV3Factory = 0x0227628f3F023bb0B980b67D528571c95c6DaC1c;
-        $uniV3OracleFactory = 0x074827E8bD77B0A66c6008a51AF9BD1F33105caf;
-
         $owner = address(0x0);
         $paused = false;
         $defaultPeriod = 30 minutes;
