@@ -63,7 +63,7 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
     uint24 constant WBTC_BTC_STALEAFTER = 1 days;
     uint8 constant WBTC_BTC_DECIMALS = 8;
 
-    AggregatorV3Interface constant DAI_USD_FEED = AggregatorV3Interface(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
+    AggregatorV3Interface constant DAI_USD_FEED = AggregatorV3Interface(0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9);
     uint24 constant DAI_USD_STALEAFTER = 1 hours;
     uint8 constant DAI_USD_DECIMALS = 8;
 
@@ -130,6 +130,10 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
     AggregatorV3Interface constant APE_USD_FEED = AggregatorV3Interface(0xD10aBbC76679a20055E167BB80A24ac851b37056);
     uint24 constant APE_USD_STALEAFTER = 1 days;
     uint8 constant APE_USD_DECIMALS = 8;
+
+    AggregatorV3Interface constant APE_ETH_FEED = AggregatorV3Interface(0xc7de7f4d4C9c991fF62a07D18b3E31e349833A18);
+    uint24 constant APE_ETH_STALEAFTER = 1 days;
+    uint8 constant APE_ETH_DECIMALS = 18;
 
     AggregatorV3Interface constant CRV_USD_FEED = AggregatorV3Interface(0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f);
     uint24 constant CRV_USD_STALEAFTER = 1 days;
@@ -202,8 +206,6 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
      */
 
     function setUp() public {
-        $weth9 = WETH;
-
         $owner = address(0);
         $paused = false;
 
@@ -227,7 +229,7 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
         );
 
         // 1: USDC/WBTC
-        ChainlinkOracleImpl.Feed[] memory usdcWbtcFeeds = new ChainlinkOracleImpl.Feed[](2);
+        ChainlinkOracleImpl.Feed[] memory usdcWbtcFeeds = new ChainlinkOracleImpl.Feed[](3);
         usdcWbtcFeeds[0] = ChainlinkOracleImpl.Feed({
             feed: USDC_USD_FEED,
             decimals: USDC_USD_DECIMALS,
@@ -238,6 +240,12 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
             feed: BTC_USD_FEED,
             decimals: BTC_USD_DECIMALS,
             staleAfter: BTC_USD_STALEAFTER,
+            mul: false
+        });
+        usdcWbtcFeeds[2] = ChainlinkOracleImpl.Feed({
+            feed: WBTC_BTC_FEED,
+            decimals: WBTC_BTC_DECIMALS,
+            staleAfter: WBTC_BTC_STALEAFTER,
             mul: false
         });
         $pairDetails.push(
@@ -557,7 +565,7 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
         );
 
         // 17: USDT/WBTC
-        ChainlinkOracleImpl.Feed[] memory usdtWbtcFeeds = new ChainlinkOracleImpl.Feed[](2);
+        ChainlinkOracleImpl.Feed[] memory usdtWbtcFeeds = new ChainlinkOracleImpl.Feed[](3);
         usdtWbtcFeeds[0] = ChainlinkOracleImpl.Feed({
             feed: USDT_USD_FEED,
             decimals: USDT_USD_DECIMALS,
@@ -568,6 +576,12 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
             feed: BTC_USD_FEED,
             decimals: BTC_USD_DECIMALS,
             staleAfter: BTC_USD_STALEAFTER,
+            mul: false
+        });
+        usdtWbtcFeeds[2] = ChainlinkOracleImpl.Feed({
+            feed: WBTC_BTC_FEED,
+            decimals: WBTC_BTC_DECIMALS,
+            staleAfter: WBTC_BTC_STALEAFTER,
             mul: false
         });
         $pairDetails.push(
@@ -866,7 +880,7 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
         );
 
         // 32: DAI/WBTC
-        ChainlinkOracleImpl.Feed[] memory daiWbtcFeeds = new ChainlinkOracleImpl.Feed[](2);
+        ChainlinkOracleImpl.Feed[] memory daiWbtcFeeds = new ChainlinkOracleImpl.Feed[](3);
         daiWbtcFeeds[0] = ChainlinkOracleImpl.Feed({
             feed: DAI_USD_FEED,
             decimals: DAI_USD_DECIMALS,
@@ -877,6 +891,12 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
             feed: BTC_USD_FEED,
             decimals: BTC_USD_DECIMALS,
             staleAfter: BTC_USD_STALEAFTER,
+            mul: false
+        });
+        daiWbtcFeeds[2] = ChainlinkOracleImpl.Feed({
+            feed: WBTC_BTC_FEED,
+            decimals: WBTC_BTC_DECIMALS,
+            staleAfter: WBTC_BTC_STALEAFTER,
             mul: false
         });
         $pairDetails.push(
@@ -1139,8 +1159,14 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
         );
 
         // 45: WBTC/WETH
-        ChainlinkOracleImpl.Feed[] memory wbtcWethFeeds = new ChainlinkOracleImpl.Feed[](1);
+        ChainlinkOracleImpl.Feed[] memory wbtcWethFeeds = new ChainlinkOracleImpl.Feed[](2);
         wbtcWethFeeds[0] = ChainlinkOracleImpl.Feed({
+            feed: WBTC_BTC_FEED,
+            decimals: WBTC_BTC_DECIMALS,
+            staleAfter: WBTC_BTC_STALEAFTER,
+            mul: true
+        });
+        wbtcWethFeeds[1] = ChainlinkOracleImpl.Feed({
             feed: BTC_ETH_FEED,
             decimals: BTC_ETH_DECIMALS,
             staleAfter: BTC_ETH_STALEAFTER,
@@ -1322,18 +1348,12 @@ contract CreateDefaultChainlinkOracleMainnetScript is CreateDefaultOracleBaseScr
         );
 
         // 56: APE/WETH
-        ChainlinkOracleImpl.Feed[] memory apeWethFeeds = new ChainlinkOracleImpl.Feed[](2);
+        ChainlinkOracleImpl.Feed[] memory apeWethFeeds = new ChainlinkOracleImpl.Feed[](1);
         apeWethFeeds[0] = ChainlinkOracleImpl.Feed({
-            feed: APE_USD_FEED,
-            decimals: APE_USD_DECIMALS,
-            staleAfter: APE_USD_STALEAFTER,
+            feed: APE_ETH_FEED,
+            decimals: APE_ETH_DECIMALS,
+            staleAfter: APE_ETH_STALEAFTER,
             mul: true
-        });
-        apeWethFeeds[1] = ChainlinkOracleImpl.Feed({
-            feed: ETH_USD_FEED,
-            decimals: ETH_USD_DECIMALS,
-            staleAfter: ETH_USD_STALEAFTER,
-            mul: false
         });
         $pairDetails.push(
             ChainlinkOracleImpl.SetPairDetailParams({
