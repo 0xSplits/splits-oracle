@@ -45,17 +45,10 @@ contract CreateDefaultOracleArbitrumScript is CreateDefaultOracleBaseScript {
         $pairDetails.push(
             PairDetail({tokenA: WETH9, tokenB: WSTETH, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)})
         );
-        $pairDetails.push(PairDetail({tokenA: USDCE, tokenB: DAI, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
         $pairDetails.push(PairDetail({tokenA: USDC, tokenB: DAI, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: USDCE, tokenB: USDT, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
         $pairDetails.push(PairDetail({tokenA: USDC, tokenB: USDT, poolFee: POINT_ZERO_ONE_PERCENT, period: uint32(0)}));
         $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: LINK, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(PairDetail({tokenA: USDCE, tokenB: ARB, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)}));
         $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: PENDLE, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
         $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: RDNT, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
-        $pairDetails.push(
-            PairDetail({tokenA: USDCE, tokenB: WBTC, poolFee: POINT_ZERO_FIVE_PERCENT, period: uint32(0)})
-        );
-        $pairDetails.push(PairDetail({tokenA: WETH9, tokenB: UNI, poolFee: POINT_THREE_PERCENT, period: uint32(0)}));
     }
 }
