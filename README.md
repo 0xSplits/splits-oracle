@@ -8,7 +8,7 @@ Oracle provides a generic interface (IOracle) allowing for modular integrations 
 
 `UniV3OracleImpl` - provides per-pair customization layer (pool, period) on top of Uniswap v3's TWAP oracle
 
-`ChainlinkOracleImpl` - coming soon
+`ChainlinkOracleImpl` - provides per-pair customization layer (path, staleAfter) on top of Chainlink's data feed oracle
 
 ## Why
 
@@ -21,6 +21,8 @@ Many onchain value flows require fair pricing for token pairs
 ### How does it determine fair pricing?
 
 `UniV3OracleImpl` uses Uniswap v3's TWAP oracle. The owner must set per-pair reference pools & may set default & per-pair TWAP periods.
+
+`ChainlinkOracleImpl` - uses Chainlink's data feed oracle. The owner must set per-pair data feed paths.
 
 ### How is it governed?
 
