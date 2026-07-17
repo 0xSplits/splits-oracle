@@ -1,6 +1,6 @@
 # splits-oracle
 
-[Docs](https://docs.0xsplits.xyz/core/oracle)
+[Docs](https://splits.org/protocol/docs/core/oracle)
 
 ## What
 
